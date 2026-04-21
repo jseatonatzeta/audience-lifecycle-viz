@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audience Lifecycle: Distorted vs. Fixed | Zeta Global</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080816;
+  --surface: rgba(255,255,255,0.03);
+  --raised: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.08);
+  --borderHover: rgba(255,255,255,0.15);
+  --text: #ffffff;
+  --muted: #9ca3af;
+  --dim: #4b5563;
+  --red: #ef4444;
+  --redBg: rgba(239,68,68,0.06);
+  --redBorder: rgba(239,68,68,0.18);
+  --redTxt: rgba(239,68,68,0.85);
+  --green: #22c55e;
+  --greenAlt: #10b981;
+  --greenBg: rgba(34,197,94,0.06);
+  --greenBorder: rgba(34,197,94,0.18);
+  --greenTxt: rgba(34,197,94,0.85);
+  --amber: #f59e0b;
+  --amberBg: rgba(245,158,11,0.06);
+  --amberBorder: rgba(245,158,11,0.18);
+  --blue: #60a5fa;
+  --blueBg: rgba(96,165,250,0.08);
+  --blueBorder: rgba(96,165,250,0.15);
+  --purple: #a78bfa;
+  --cyan: #22d3ee;
+  --gradient: linear-gradient(135deg, #22c55e 0%, #10b981 50%, #06b6d4 100%);
+  --gradientSubtle: linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(16,185,129,0.08) 50%, rgba(6,182,212,0.05) 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.55;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(34,197,94,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(6,182,212,0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+body > * { position: relative; z-index: 1; }
+
+.page-header {
+  text-align: center;
+  padding: 48px 32px 10px;
+}
+.page-header h1 {
+  font-family: 'Inter', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #d1d5db 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.page-header .sub {
+  font-size: 0.9rem;
+  color: var(--muted);
+  max-width: 780px;
+  margin: 0 auto;
+  line-height: 1.75;
+  font-weight: 400;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  padding: 18px 32px 28px;
+  flex-wrap: wrap;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.76rem; color: var(--muted); font-weight: 500;
+}
+.legend-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.legend-dot.red   { background: var(--red);   box-shadow: 0 0 10px rgba(239,68,68,0.4); }
+.legend-dot.green { background: var(--green); box-shadow: 0 0 10px rgba(34,197,94,0.4); }
+.legend-dot.amber { background: var(--amber); box-shadow: 0 0 10px rgba(245,158,11,0.35); }
+
+.zoom-hint {
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--dim);
+  margin-bottom: 20px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+/* ---- Scroll container ---- */
+.scroll-wrap {
+  overflow-x: auto;
+  padding: 0 24px 20px;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.timeline-block {
+  min-width: 1800px;
+  margin-bottom: 10px;
+}
+
+/* ---- Section header ---- */
+.section-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 6px; padding: 10px 0 6px 4px;
+}
+.section-header .dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.section-header.broken .dot { background: var(--red); box-shadow: 0 0 12px rgba(239,68,68,0.5); }
+.section-header.fixed  .dot {
+  background: var(--green);
+  box-shadow: 0 0 12px rgba(34,197,94,0.5);
+}
+.section-header h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.15rem; font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.section-header .tag {
+  margin-left: 10px;
+  font-size: 0.58rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 100px;
+}
+.section-header.broken .tag {
+  background: var(--redBg); color: var(--red);
+  border: 1px solid var(--redBorder);
+}
+.section-header.fixed .tag {
+  background: var(--greenBg); color: var(--green);
+  border: 1px solid var(--greenBorder);
+}
+
+/* ---- Phase row ---- */
+.phase-row {
+  display: grid; grid-template-columns: repeat(8, 1fr);
+  gap: 6px; margin-bottom: 4px;
+}
+.phase-cell {
+  text-align: center;
+  font-size: 0.56rem; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--dim); padding: 4px 0;
+}
+.phase-cell.phase-start {
+  border-top: 1px solid var(--border); padding-top: 6px;
+}
+
+/* ---- Steps row ---- */
+.steps-row {
+  display: grid; grid-template-columns: repeat(8, 1fr);
+  gap: 6px; margin-bottom: 4px;
+}
+
+.step-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 14px 12px;
+  transition: border-color 0.3s, background 0.3s, box-shadow 0.3s, opacity 0.3s;
+  display: flex; flex-direction: column;
+  cursor: pointer;
+  user-select: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.step-card:hover {
+  border-color: var(--borderHover);
+  background: var(--raised);
+}
+
+.step-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem; font-weight: 600;
+  width: 22px; height: 22px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 8px;
+}
+.broken .step-num {
+  background: var(--redBg); color: var(--red);
+  border: 1px solid var(--redBorder);
+}
+.fixed .step-num {
+  background: var(--greenBg); color: var(--green);
+  border: 1px solid var(--greenBorder);
+}
+
+.step-title {
+  font-weight: 600; font-size: 0.78rem;
+  margin-bottom: 4px; line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.step-desc {
+  font-size: 0.7rem; color: var(--muted);
+  line-height: 1.6; flex: 1; font-weight: 400;
+}
+.step-desc code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem; background: var(--raised);
+  padding: 2px 5px; border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+/* Zoom dimming */
+.timeline-block.zoomed .step-card { opacity: 0.2; transition: opacity 0.4s; }
+.timeline-block.zoomed .step-card.zoom-visible { opacity: 1; }
+.timeline-block.zoomed .step-card.zoom-focus {
+  opacity: 1;
+  border-color: rgba(255,255,255,0.25);
+  box-shadow: 0 0 30px rgba(255,255,255,0.06), 0 0 60px rgba(34,197,94,0.04);
+}
+.broken.zoomed .step-card.zoom-focus {
+  box-shadow: 0 0 30px rgba(255,255,255,0.06), 0 0 60px rgba(239,68,68,0.06);
+}
+
+/* ---- Callout row ---- */
+.callout-row {
+  display: grid; grid-template-columns: repeat(8, 1fr);
+  gap: 6px; margin-bottom: 3px;
+}
+.callout {
+  border-radius: 10px; padding: 9px 11px; min-height: 16px;
+  transition: opacity 0.4s;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.callout-empty { background: transparent; }
+.callout-red   { background: var(--redBg);   border-left: 2px solid var(--red); }
+.callout-amber { background: var(--amberBg); border-left: 2px solid var(--amber); }
+.callout-green { background: var(--greenBg); border-left: 2px solid var(--green); }
+
+.callout .cl-label {
+  font-size: 0.56rem; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.callout-red   .cl-label { color: var(--red); }
+.callout-amber .cl-label { color: var(--amber); }
+.callout-green .cl-label { color: var(--green); }
+.callout .cl-detail { font-size: 0.64rem; line-height: 1.5; font-weight: 400; }
+.callout-red   .cl-detail { color: var(--redTxt); }
+.callout-amber .cl-detail { color: rgba(245,158,11,0.8); }
+.callout-green .cl-detail { color: var(--greenTxt); }
+
+.timeline-block.zoomed .callout { opacity: 0.12; }
+.timeline-block.zoomed .callout.zoom-visible { opacity: 1; }
+
+/* ---- Sankey canvas row ---- */
+.sankey-row { position: relative; margin: 4px 0 2px; }
+.sankey-row canvas { display: block; width: 100%; }
+
+/* ---- Divider ---- */
+.big-divider {
+  height: 2px;
+  background: linear-gradient(90deg, rgba(239,68,68,0.2) 0%, rgba(75,85,99,0.3) 50%, rgba(34,197,94,0.2) 100%);
+  margin: 20px 0 18px;
+  border-radius: 2px;
+  min-width: 1800px;
+}
+
+/* ---- Outcome boxes ---- */
+.outcome-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 32px; max-width: 1300px;
+  margin: 32px auto 56px; padding: 0 24px;
+}
+.outcome-box {
+  padding: 24px 24px;
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.outcome-box.ob-red {
+  background: var(--redBg);
+  border: 1px solid var(--redBorder);
+}
+.outcome-box.ob-green {
+  background: var(--greenBg);
+  border: 1px solid var(--greenBorder);
+}
+.outcome-box h4 {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem; font-weight: 700;
+  margin-bottom: 12px; letter-spacing: -0.02em;
+}
+.ob-red h4   { color: var(--red); }
+.ob-green h4 { color: var(--green); }
+.outcome-box ul { list-style: none; padding: 0; }
+.outcome-box li {
+  font-size: 0.76rem; color: var(--muted); font-weight: 400;
+  padding: 4px 0 4px 18px; position: relative;
+}
+.outcome-box li::before {
+  content: ''; position: absolute;
+  left: 0; top: 11px;
+  width: 5px; height: 5px; border-radius: 50%; opacity: 0.6;
+}
+.ob-red li::before   { background: var(--red); }
+.ob-green li::before { background: var(--green); }
+
+/* ---- Pulse animation for Sankey highlights ---- */
+@keyframes sankeyPulse {
+  0%   { opacity: 0.15; }
+  50%  { opacity: 0.55; }
+  100% { opacity: 0.15; }
+}
+
+@media (max-width: 900px) {
+  .outcome-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:16px;padding:6px 16px;border-radius:100px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);">
+    <svg width="24" height="24" viewBox="0 0 32 32" fill="none"><path d="M4 6h24L16 26 4 6z" fill="url(#zg)"/><defs><linearGradient id="zg" x1="4" y1="6" x2="28" y2="26"><stop stop-color="#22c55e"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs></svg>
+    <span style="font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);">Zeta Global &middot; Product</span>
+  </div>
+  <h1>Audience Lifecycle: Distorted vs. Fixed</h1>
+  <p class="sub">Each step is aligned between the two timelines with an inline Sankey diagram showing how identifiers flow, fan out, and resolve at every stage. Scroll right to follow the full campaign lifecycle.</p>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot red"></div>Distortion / fan-out (current)</div>
+  <div class="legend-item"><div class="legend-dot green"></div>Fix / clean flow (ZID)</div>
+  <div class="legend-item"><div class="legend-dot amber"></div>Contributing factor</div>
+</div>
+
+<div class="zoom-hint">Click any step to zoom in. Click again to zoom out.</div>
+
+<div class="scroll-wrap" id="scrollWrap">
+
+<!-- ============================================================ -->
+<!--  BROKEN TIMELINE                                             -->
+<!-- ============================================================ -->
+<div class="timeline-block broken" id="brokenBlock">
+
+  <div class="section-header broken">
+    <div class="dot"></div>
+    <h2>Current Process (Distorted)</h2>
+    <span class="tag">Today</span>
+  </div>
+
+  <div class="phase-row">
+    <div class="phase-cell phase-start">Pre-Campaign</div>
+    <div class="phase-cell phase-start"></div>
+    <div class="phase-cell phase-start"></div>
+    <div class="phase-cell phase-start"></div>
+    <div class="phase-cell phase-start">In-Flight</div>
+    <div class="phase-cell phase-start"></div>
+    <div class="phase-cell phase-start">Post-Campaign</div>
+    <div class="phase-cell phase-start"></div>
+  </div>
+
+  <div class="steps-row" id="brokenSteps">
+    <div class="step-card" data-step="0">
+      <div class="step-num">1</div>
+      <div class="step-title">Client Data Ingested</div>
+      <div class="step-desc">Client sends emails, voter files, CRM lists. Or audience built from Data Cloud.</div>
+    </div>
+    <div class="step-card" data-step="1">
+      <div class="step-num">2</div>
+      <div class="step-title">Audience Built in ZMP</div>
+      <div class="step-desc">Boolean logic applied. Size <strong>estimated</strong> via Scaler sampling.</div>
+    </div>
+    <div class="step-card" data-step="2">
+      <div class="step-num">3</div>
+      <div class="step-title">Export ZMP &rarr; DSP via ZIGS</div>
+      <div class="step-desc">email_md5s &rarr; ZIGS identity resolver. Multi-hop graph traversal.</div>
+    </div>
+    <div class="step-card" data-step="3">
+      <div class="step-num">4</div>
+      <div class="step-title">Audience Sized in DSP</div>
+      <div class="step-desc">Size often dramatically different. Teams sometimes rebuild in DSP.</div>
+    </div>
+    <div class="step-card" data-step="4">
+      <div class="step-num">5</div>
+      <div class="step-title">Campaign Activated</div>
+      <div class="step-desc">Targeting via <code>zeta_segments</code>. Household, cross-device, OR logic, pacing.</div>
+    </div>
+    <div class="step-card" data-step="5">
+      <div class="step-num">6</div>
+      <div class="step-title">Impression Cookies Pulled</div>
+      <div class="step-desc">Analytics queries Hive for cookies that clicked, converted, completed video.</div>
+    </div>
+    <div class="step-card" data-step="6">
+      <div class="step-num">7</div>
+      <div class="step-title">Customer Pulse: Reverse Resolution</div>
+      <div class="step-desc">Cookies &rarr; email_md5s. Demographics from <code>demographics_raw_data_parquet</code>.</div>
+    </div>
+    <div class="step-card" data-step="7">
+      <div class="step-num">8</div>
+      <div class="step-title">Report Delivered</div>
+      <div class="step-desc"><strong>No targeting context.</strong> Standalone demographic breakdown. Bell curve at 45-54.</div>
+    </div>
+  </div>
+
+  <!-- Distortion callouts (ABOVE sankey) -->
+  <div class="callout-row" id="brokenCallouts1">
+    <div class="callout callout-empty" data-col="0"></div>
+    <div class="callout callout-red" data-col="1">
+      <div class="cl-label">#1 Estimated Counts</div>
+      <div class="cl-detail">Scaler uses sampling. Error rate unmeasured. Client sees an estimate from step one.</div>
+    </div>
+    <div class="callout callout-red" data-col="2">
+      <div class="cl-label">#2 Identity Fan-Out</div>
+      <div class="cl-detail">1 email &rarr; N cookies (different people). 5&ndash;10x size change. Contradictory demographics.</div>
+    </div>
+    <div class="callout callout-empty" data-col="3"></div>
+    <div class="callout callout-red" data-col="4">
+      <div class="cl-label">#3 Reachability Gap</div>
+      <div class="cl-detail">Graph retains cookies 365d. No forecasting. Stale cookies dominate. Pacing fails.</div>
+    </div>
+    <div class="callout callout-empty" data-col="5"></div>
+    <div class="callout callout-red" data-col="6">
+      <div class="cl-label">#4 Different Tables &nbsp;|&nbsp; #5 Round-Trip</div>
+      <div class="cl-detail">Targeting: cookie-keyed. Reporting: email_md5-keyed. Reverse resolution fans out 2x+, bringing back people who were never targeted.</div>
+    </div>
+    <div class="callout callout-red" data-col="7">
+      <div class="cl-label">#6 No Targeting Context</div>
+      <div class="cl-detail">&ldquo;Who we reached&rdquo; but not &ldquo;did we reach who we targeted?&rdquo;</div>
+    </div>
+  </div>
+
+  <div class="callout-row" id="brokenCallouts2">
+    <div class="callout callout-empty" data-col="0"></div>
+    <div class="callout callout-empty" data-col="1"></div>
+    <div class="callout callout-empty" data-col="2"></div>
+    <div class="callout callout-amber" data-col="3">
+      <div class="cl-label">Scale-Seeking</div>
+      <div class="cl-detail">AMs add supplemental segments for scale, guaranteeing demo disagreement.</div>
+    </div>
+    <div class="callout callout-amber" data-col="4">
+      <div class="cl-label">Household + OR + Pacing</div>
+      <div class="cl-detail">Household devices, OR logic, cross-device, pacing all broaden delivery beyond target.</div>
+    </div>
+    <div class="callout callout-empty" data-col="5"></div>
+    <div class="callout callout-amber" data-col="6">
+      <div class="cl-label">Config Not Accessible</div>
+      <div class="cl-detail">DSP targeting config not piped to reporting.</div>
+    </div>
+    <div class="callout callout-empty" data-col="7"></div>
+  </div>
+
+  <!-- Inline Sankey for broken flow -->
+  <div class="sankey-row">
+    <canvas id="sankey-broken" height="380"></canvas>
+  </div>
+
+</div>
+
+<!-- Big divider -->
+<div class="big-divider"></div>
+
+<!-- ============================================================ -->
+<!--  FIXED TIMELINE                                              -->
+<!-- ============================================================ -->
+<div class="timeline-block fixed" id="fixedBlock">
+
+  <div class="section-header fixed">
+    <div class="dot"></div>
+    <h2>Fixed Process (ZID + Audience Explorer + Reporting Tool)</h2>
+    <span class="tag">Target: Q3&ndash;Q4 2026</span>
+  </div>
+
+  <div class="phase-row">
+    <div class="phase-cell phase-start">Pre-Campaign</div>
+    <div class="phase-cell phase-start"></div>
+    <div class="phase-cell phase-start"></div>
+    <div class="phase-cell phase-start"></div>
+    <div class="phase-cell phase-start">In-Flight</div>
+    <div class="phase-cell phase-start"></div>
+    <div class="phase-cell phase-start">Post-Campaign</div>
+    <div class="phase-cell phase-start"></div>
+  </div>
+
+  <div class="steps-row" id="fixedSteps">
+    <div class="step-card" data-step="0">
+      <div class="step-num">1</div>
+      <div class="step-title">Client Data Ingested</div>
+      <div class="step-desc">Same as today. Client sends emails, CRM, voter files.</div>
+    </div>
+    <div class="step-card" data-step="1">
+      <div class="step-num">2</div>
+      <div class="step-title">Audience Explorer (Redesigned)</div>
+      <div class="step-desc"><strong>Multi-dimensional counts</strong>: people (ZID), households, devices. Optional true counts.</div>
+    </div>
+    <div class="step-card" data-step="2">
+      <div class="step-num">3</div>
+      <div class="step-title">ZID Cluster Export + Reachability</div>
+      <div class="step-desc">Pre-computed <code>ZID &rarr; cluster cookies</code>. Reachability forecast inline. Criteria logged.</div>
+    </div>
+    <div class="step-card" data-step="3">
+      <div class="step-num">4</div>
+      <div class="step-title">DSP Audience &mdash; Size Matches</div>
+      <div class="step-desc">Both systems count ZIDs. Direct cluster read. No inflation/contraction.</div>
+    </div>
+    <div class="step-card" data-step="4">
+      <div class="step-num">5</div>
+      <div class="step-title">Campaign + ZID Logged</div>
+      <div class="step-desc">Impressions carry ZID. Full targeting config accessible to reporting.</div>
+    </div>
+    <div class="step-card" data-step="5">
+      <div class="step-num">6</div>
+      <div class="step-title">Impressions &rarr; ZID Direct</div>
+      <div class="step-desc">Cookie &rarr; ZID &rarr; demographics. Same source as targeting. No reverse resolution.</div>
+    </div>
+    <div class="step-card" data-step="6">
+      <div class="step-num">7</div>
+      <div class="step-title">In-Group / Out-of-Group</div>
+      <div class="step-desc">Impressions vs. targeting criteria. Per-channel. Household/cross-device separated.</div>
+    </div>
+    <div class="step-card" data-step="7">
+      <div class="step-num">8</div>
+      <div class="step-title">Report Delivered</div>
+      <div class="step-desc">Unified source, intent comparison, all paths agree on ZID.</div>
+    </div>
+  </div>
+
+  <!-- Fix callouts (ABOVE sankey) -->
+  <div class="callout-row" id="fixedCallouts1">
+    <div class="callout callout-empty" data-col="0"></div>
+    <div class="callout callout-green" data-col="1">
+      <div class="cl-label">Accurate Multi-Tier Counts</div>
+      <div class="cl-detail">ZID = real people. Optional exact counts. People + households + devices. Fixes #1, #2.</div>
+    </div>
+    <div class="callout callout-green" data-col="2">
+      <div class="cl-label">No Fan-Out + Reachability</div>
+      <div class="cl-detail">1 ZID = 1 person. Pre-computed clusters. Reachability forecast before launch. Fixes #2, #3.</div>
+    </div>
+    <div class="callout callout-green" data-col="3">
+      <div class="cl-label">Size Consistency</div>
+      <div class="cl-detail">Same ZID count in AE and DSP. No re-resolution. Direct cluster read.</div>
+    </div>
+    <div class="callout callout-green" data-col="4">
+      <div class="cl-label">Config Carried Forward</div>
+      <div class="cl-detail">Boolean logic, household, cross-device, pacing all accessible to reporting tool.</div>
+    </div>
+    <div class="callout callout-green" data-col="5">
+      <div class="cl-label">No Reverse Resolution</div>
+      <div class="cl-detail">cookie &rarr; ZID &rarr; demographics. Same source as targeting. Fixes #4, #5.</div>
+    </div>
+    <div class="callout callout-green" data-col="6">
+      <div class="cl-label">Intent vs. Delivery</div>
+      <div class="cl-detail">In-group / out-of-group. Divergences auto-flagged. Fixes #6 + contributing factors.</div>
+    </div>
+    <div class="callout callout-green" data-col="7">
+      <div class="cl-label">All Paths Agree</div>
+      <div class="cl-detail">Every reporting path keys on ZID + same demographic source.</div>
+    </div>
+  </div>
+
+  <!-- Inline Sankey for fixed flow -->
+  <div class="sankey-row">
+    <canvas id="sankey-fixed" height="380"></canvas>
+  </div>
+
+</div>
+
+</div><!-- scroll-wrap -->
+
+<!-- Outcomes -->
+<div class="outcome-row">
+  <div class="outcome-box ob-red">
+    <h4>Distorted Outcome</h4>
+    <ul>
+      <li>Every campaign shows the same age bell curve peaking at 45-54</li>
+      <li>&ldquo;Women 25-54&rdquo; campaigns report ~50/50 male/female</li>
+      <li>Six- and seven-figure financial give-backs</li>
+      <li>Customer Pulse reports withheld from clients</li>
+      <li>Analytics and Data Cloud reports disagree for same campaign</li>
+      <li>Teams rebuild targeting directly in DSP as a workaround</li>
+    </ul>
+  </div>
+  <div class="outcome-box ob-green">
+    <h4>Fixed Outcome</h4>
+    <ul>
+      <li>Audience sizes match across ZMP, DSP, and reporting</li>
+      <li>Demographics reflect actual targeting &mdash; no phantom bell curves</li>
+      <li>Reachability known before launch &mdash; no mid-flight surprises</li>
+      <li>Reports compare intent vs. delivery with automated divergence flags</li>
+      <li>All systems use ZID + single demographic source &mdash; reports agree</li>
+      <li>Household / cross-device / pacing impacts visible and separated</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const COLORS = {
+  alice: '#a78bfa', bob: '#60a5fa', carol: '#22d3ee',
+  red: '#ef4444', amber: '#f59e0b', green: '#22c55e',
+  dim: '#4b5563', text: '#ffffff', muted: '#9ca3af',
+};
+
+const SANKEY_H = 380;
+const NODE_W = 14;
+
+function setupCanvas(canvas, heightPx) {
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.offsetWidth;
+  const H = heightPx;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, W, H };
+}
+
+function getColCenters(W) {
+  const n = 8, gap = 6;
+  const colW = (W - gap * (n - 1)) / n;
+  return Array.from({ length: n }, (_, i) => i * (colW + gap) + colW / 2);
+}
+
+function bezFill(ctx, x1, y1t, y1b, x2, y2t, y2b, color, alpha) {
+  const cx1 = x1 + (x2 - x1) * 0.42, cx2 = x1 + (x2 - x1) * 0.58;
+  ctx.fillStyle = color; ctx.globalAlpha = alpha;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1t);
+  ctx.bezierCurveTo(cx1, y1t, cx2, y2t, x2, y2t);
+  ctx.lineTo(x2, y2b);
+  ctx.bezierCurveTo(cx2, y2b, cx1, y1b, x1, y1b);
+  ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+}
+
+function bezLine(ctx, x1, y1, x2, y2, color, alpha, lw) {
+  const cx1 = x1 + (x2 - x1) * 0.42, cx2 = x1 + (x2 - x1) * 0.58;
+  ctx.strokeStyle = color; ctx.globalAlpha = alpha; ctx.lineWidth = lw;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.bezierCurveTo(cx1, y1, cx2, y2, x2, y2);
+  ctx.stroke(); ctx.globalAlpha = 1;
+}
+
+function drawNode(ctx, x, y, w, h, color, a) {
+  ctx.fillStyle = color; ctx.globalAlpha = a || 0.85;
+  ctx.beginPath(); ctx.roundRect(x - w/2, y, w, h, 6); ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function label(ctx, text, x, y, color, align, sz) {
+  ctx.font = `500 ${sz||11}px 'JetBrains Mono',monospace`;
+  ctx.fillStyle = color || COLORS.muted;
+  ctx.textAlign = align || 'center';
+  ctx.fillText(text, x, y);
+}
+
+function tag(ctx, text, x, y, bg, fg, sz) {
+  ctx.font = `600 ${sz||10}px 'Inter',sans-serif`;
+  const m = ctx.measureText(text);
+  const tw = m.width + 16, th = sz ? sz + 10 : 20;
+  ctx.fillStyle = bg; ctx.globalAlpha = 0.9;
+  ctx.beginPath(); ctx.roundRect(x - tw/2, y - th/2, tw, th, 100);
+  ctx.fill(); ctx.globalAlpha = 1;
+  ctx.fillStyle = fg; ctx.textAlign = 'center';
+  ctx.fillText(text, x, y + (sz ? sz/3 : 4));
+}
+
+// Highlight state for zoom
+let brokenHighlightCols = null;
+let fixedHighlightCols = null;
+let pulsePhase = 0;
+let pulseRAF = null;
+
+// ============================================================
+//  BROKEN SANKEY
+// ============================================================
+function drawBrokenSankey(highlightCols) {
+  const canvas = document.getElementById('sankey-broken');
+  const { ctx, W, H } = setupCanvas(canvas, SANKEY_H);
+  const cx = getColCenters(W);
+  const nw = NODE_W;
+
+  const colLabelY = 18;
+  const flowTop = 36;
+
+  label(ctx, 'email_md5', cx[0], colLabelY, COLORS.dim, 'center', 10);
+  label(ctx, 'email_md5', cx[1], colLabelY, COLORS.dim, 'center', 10);
+  label(ctx, 'ZIGS \u2192 cookies', cx[2], colLabelY, COLORS.red, 'center', 10);
+  label(ctx, 'cookies in DSP', cx[3], colLabelY, COLORS.dim, 'center', 10);
+  label(ctx, 'cookies (targeting)', cx[4], colLabelY, COLORS.dim, 'center', 10);
+  label(ctx, 'impression cookies', cx[5], colLabelY, COLORS.dim, 'center', 10);
+  label(ctx, 'reverse \u2192 email_md5', cx[6], colLabelY, COLORS.red, 'center', 10);
+  label(ctx, 'report demographics', cx[7], colLabelY, COLORS.dim, 'center', 10);
+
+  const srcH = 60, srcGap = 16;
+  const totalSrc = 3*srcH + 2*srcGap;
+  const srcTop = flowTop + (H - flowTop - 50 - totalSrc)/2;
+  const src = [
+    { y: srcTop,                   h: srcH, color: COLORS.alice, label: 'alice@' },
+    { y: srcTop + srcH + srcGap,   h: srcH, color: COLORS.bob,   label: 'bob@' },
+    { y: srcTop + 2*(srcH+srcGap), h: srcH, color: COLORS.carol, label: 'carol@' },
+  ];
+
+  const ckH = 24, ckGap = 5;
+  const cookies = [
+    { color: COLORS.alice, from: 0, label: 'ck_A1' },
+    { color: COLORS.alice, from: 0, label: 'ck_A2' },
+    { color: COLORS.red,   from: [0,1], label: 'ck_AB', shared: true },
+    { color: COLORS.bob,   from: 1, label: 'ck_B1' },
+    { color: COLORS.carol, from: 2, label: 'ck_C1' },
+    { color: COLORS.carol, from: 2, label: 'ck_C2' },
+    { color: COLORS.carol, from: 2, label: 'ck_C3' },
+    { color: COLORS.amber, from: 1, label: 'ck_??', stale: true },
+  ];
+  const totalCk = cookies.length*ckH + (cookies.length-1)*ckGap;
+  const ckTop = flowTop + (H - flowTop - 50 - totalCk)/2;
+  cookies.forEach((c,i) => { c.y = ckTop + i*(ckH+ckGap); c.h = ckH; });
+
+  const revH = 16, revGap = 2;
+  const revEmails = [
+    { color: COLORS.alice, label: 'alice@',   orig: true },
+    { color: COLORS.red,   label: 'dave@',    orig: false },
+    { color: COLORS.red,   label: 'hank@',    orig: false },
+    { color: COLORS.alice, label: 'alice@',   orig: true },
+    { color: COLORS.bob,   label: 'bob@',     orig: true },
+    { color: COLORS.red,   label: 'eve@',     orig: false },
+    { color: COLORS.red,   label: 'ivan@',    orig: false },
+    { color: COLORS.red,   label: 'jess@',    orig: false },
+    { color: COLORS.carol, label: 'carol@',   orig: true },
+    { color: COLORS.red,   label: 'frank@',   orig: false },
+    { color: COLORS.red,   label: 'kelly@',   orig: false },
+    { color: COLORS.red,   label: 'luis@',    orig: false },
+    { color: COLORS.red,   label: 'grace@',   orig: false },
+    { color: COLORS.red,   label: 'mona@',    orig: false },
+    { color: COLORS.red,   label: 'nick@',    orig: false },
+    { color: COLORS.red,   label: 'olivia@',  orig: false },
+  ];
+  const totalRev = revEmails.length*revH + (revEmails.length-1)*revGap;
+  const revTop = flowTop + (H - flowTop - 50 - totalRev)/2;
+  revEmails.forEach((r,i) => { r.y = revTop + i*(revH+revGap); r.h = revH; });
+
+  // Each cookie fans out to multiple reverse emails (aggressive 2x+ fan-out)
+  const ckToRev = [
+    [0,0],[0,1],           // ck_A1 -> alice, dave
+    [1,2],[1,3],           // ck_A2 -> hank, alice
+    [2,4],[2,5],[2,6],     // ck_AB (shared) -> bob, eve, ivan
+    [3,7],[3,8],           // ck_B1 -> jess, carol
+    [4,9],[4,10],          // ck_C1 -> frank, kelly
+    [5,11],[5,12],         // ck_C2 -> luis, grace
+    [6,13],[6,14],[6,15],  // ck_C3 -> mona, nick, olivia
+  ];
+
+  // Determine which columns to highlight vs dim
+  const hl = highlightCols;
+  function colAlpha(col, baseAlpha) {
+    if (!hl) return baseAlpha;
+    if (hl.includes(col)) return baseAlpha * (1.0 + 0.4 * Math.sin(pulsePhase));
+    return baseAlpha * 0.15;
+  }
+  function flowAlpha(c1, c2, base) {
+    if (!hl) return base;
+    if (hl.includes(c1) && hl.includes(c2)) return base * (1.0 + 0.5 * Math.sin(pulsePhase));
+    if (hl.includes(c1) || hl.includes(c2)) return base * 0.5;
+    return base * 0.1;
+  }
+
+  // FLOWS
+  src.forEach(s => {
+    bezFill(ctx, cx[0]+nw/2, s.y, s.y+s.h, cx[1]-nw/2, s.y, s.y+s.h, s.color, flowAlpha(0,1,0.14));
+    bezLine(ctx, cx[0]+nw/2, s.y+s.h/2, cx[1]-nw/2, s.y+s.h/2, s.color, flowAlpha(0,1,0.35), 1.5);
+  });
+
+  cookies.forEach(ck => {
+    const froms = Array.isArray(ck.from) ? ck.from : [ck.from];
+    froms.forEach(fi => {
+      const s = src[fi];
+      const fc = ck.shared ? COLORS.red : s.color;
+      bezFill(ctx, cx[1]+nw/2, s.y, s.y+s.h, cx[2]-nw/2, ck.y, ck.y+ck.h, fc, flowAlpha(1,2,0.13));
+      bezLine(ctx, cx[1]+nw/2, s.y+s.h/2, cx[2]-nw/2, ck.y+ck.h/2, fc, flowAlpha(1,2,0.3), 1.5);
+    });
+  });
+
+  cookies.forEach(ck => {
+    bezFill(ctx, cx[2]+nw/2, ck.y, ck.y+ck.h, cx[3]-nw/2, ck.y, ck.y+ck.h, ck.color, flowAlpha(2,3,0.10));
+    bezLine(ctx, cx[2]+nw/2, ck.y+ck.h/2, cx[3]-nw/2, ck.y+ck.h/2, ck.color, flowAlpha(2,3,0.25), 1);
+  });
+
+  cookies.forEach(ck => {
+    bezFill(ctx, cx[3]+nw/2, ck.y, ck.y+ck.h, cx[4]-nw/2, ck.y, ck.y+ck.h, ck.color, flowAlpha(3,4,0.10));
+    bezLine(ctx, cx[3]+nw/2, ck.y+ck.h/2, cx[4]-nw/2, ck.y+ck.h/2, ck.color, flowAlpha(3,4,0.25), 1);
+  });
+
+  cookies.forEach(ck => {
+    const sa = ck.stale ? 0.04 : 0.10;
+    const la = ck.stale ? 0.06 : 0.25;
+    bezFill(ctx, cx[4]+nw/2, ck.y, ck.y+ck.h, cx[5]-nw/2, ck.y, ck.y+ck.h, ck.color, flowAlpha(4,5,sa));
+    bezLine(ctx, cx[4]+nw/2, ck.y+ck.h/2, cx[5]-nw/2, ck.y+ck.h/2, ck.color, flowAlpha(4,5,la), 1);
+  });
+
+  ckToRev.forEach(([ci,ri]) => {
+    const ck = cookies[ci], re = revEmails[ri];
+    const fc = re.orig ? ck.color : COLORS.red;
+    bezFill(ctx, cx[5]+nw/2, ck.y, ck.y+ck.h, cx[6]-nw/2, re.y, re.y+re.h, fc, flowAlpha(5,6,0.13));
+    bezLine(ctx, cx[5]+nw/2, ck.y+ck.h/2, cx[6]-nw/2, re.y+re.h/2, fc, flowAlpha(5,6,0.3), 1.5);
+  });
+
+  revEmails.forEach(re => {
+    bezFill(ctx, cx[6]+nw/2, re.y, re.y+re.h, cx[7]-nw/2, re.y, re.y+re.h, re.color, flowAlpha(6,7,0.10));
+    bezLine(ctx, cx[6]+nw/2, re.y+re.h/2, cx[7]-nw/2, re.y+re.h/2, re.color, flowAlpha(6,7,0.25), 1);
+  });
+
+  // NODES
+  src.forEach(s => {
+    drawNode(ctx, cx[0], s.y, nw, s.h, s.color, colAlpha(0, 0.85));
+    label(ctx, s.label, cx[0]-nw/2-6, s.y+s.h/2+4, s.color, 'right', 10);
+    drawNode(ctx, cx[1], s.y, nw, s.h, s.color, colAlpha(1, 0.85));
+  });
+
+  [2,3,4,5].forEach(col => {
+    cookies.forEach(ck => {
+      const a = (col>=4 && ck.stale) ? colAlpha(col,0.3) : colAlpha(col,0.85);
+      drawNode(ctx, cx[col], ck.y, nw, ck.h, ck.color, a);
+    });
+  });
+
+  cookies.forEach(ck => {
+    label(ctx, ck.label, cx[2]+nw/2+6, ck.y+ck.h/2+4, ck.color, 'left', 9);
+  });
+
+  [6,7].forEach(col => {
+    revEmails.forEach(re => drawNode(ctx, cx[col], re.y, nw, re.h, re.color, colAlpha(col,0.85)));
+  });
+
+  revEmails.forEach(re => {
+    label(ctx, re.label, cx[7]+nw/2+6, re.y+re.h/2+4, re.color, 'left', 8);
+  });
+
+  // ANNOTATIONS
+  tag(ctx, '3 \u2192 8  FAN-OUT', (cx[1]+cx[2])/2, H - 20, 'rgba(239,68,68,0.15)', COLORS.red, 11);
+
+  const shCk = cookies[2];
+  ctx.font = "600 9px 'Inter',sans-serif";
+  ctx.fillStyle = COLORS.red; ctx.textAlign = 'left';
+  ctx.globalAlpha = colAlpha(2, 1);
+  ctx.fillText('\u26A0 shared cookie', cx[2]+nw/2+6, shCk.y+shCk.h+14);
+  ctx.globalAlpha = 1;
+
+  const stCk = cookies[7];
+  ctx.fillStyle = COLORS.amber;
+  ctx.globalAlpha = colAlpha(4, 1);
+  ctx.fillText('\u23F3 stale (365d)', cx[3]+nw/2+6, stCk.y+stCk.h/2+4);
+  ctx.globalAlpha = 1;
+
+  tag(ctx, '7 \u2192 16  (12 NEW PEOPLE)', (cx[5]+cx[6])/2, H - 20, 'rgba(239,68,68,0.15)', COLORS.red, 11);
+
+  revEmails.forEach(re => {
+    if (!re.orig) {
+      ctx.font = "600 7px 'Inter',sans-serif";
+      ctx.fillStyle = COLORS.red; ctx.textAlign = 'left';
+      ctx.globalAlpha = colAlpha(7, 1);
+      ctx.fillText('NEW', cx[7]+nw/2+52, re.y+re.h/2+3);
+      ctx.globalAlpha = 1;
+    }
+  });
+
+  tag(ctx, '3 people', cx[0], H - 20, 'rgba(255,255,255,0.05)', COLORS.muted, 10);
+  tag(ctx, '3 emails', cx[1], H - 20, 'rgba(255,255,255,0.05)', COLORS.muted, 10);
+  tag(ctx, '8 cookies', cx[3], H - 20, 'rgba(239,68,68,0.12)', COLORS.red, 10);
+  tag(ctx, '16 emails', cx[7], H - 20, 'rgba(239,68,68,0.12)', COLORS.red, 10);
+}
+
+
+// ============================================================
+//  FIXED SANKEY
+// ============================================================
+function drawFixedSankey(highlightCols) {
+  const canvas = document.getElementById('sankey-fixed');
+  const { ctx, W, H } = setupCanvas(canvas, SANKEY_H);
+  const cx = getColCenters(W);
+  const nw = NODE_W;
+
+  const colLabelY = 18;
+  const flowTop = 36;
+
+  label(ctx, 'email_md5', cx[0], colLabelY, COLORS.dim, 'center', 10);
+  label(ctx, 'ZID (person)', cx[1], colLabelY, COLORS.green, 'center', 10);
+  label(ctx, 'ZID \u2192 cluster cookies', cx[2], colLabelY, COLORS.green, 'center', 10);
+  label(ctx, 'cookies in DSP', cx[3], colLabelY, COLORS.dim, 'center', 10);
+  label(ctx, 'cookies (targeting)', cx[4], colLabelY, COLORS.dim, 'center', 10);
+  label(ctx, 'impression \u2192 ZID', cx[5], colLabelY, COLORS.green, 'center', 10);
+  label(ctx, 'ZID \u2192 demographics', cx[6], colLabelY, COLORS.green, 'center', 10);
+  label(ctx, 'report (same person)', cx[7], colLabelY, COLORS.dim, 'center', 10);
+
+  const people = [
+    { color: COLORS.alice, label: 'alice@', cookies: ['ck_A1','ck_A2'], zid: 'ZID_1' },
+    { color: COLORS.bob,   label: 'bob@',   cookies: ['ck_B1','ck_B2'], zid: 'ZID_2' },
+    { color: COLORS.carol, label: 'carol@', cookies: ['ck_C1','ck_C2','ck_C3'], zid: 'ZID_3' },
+  ];
+
+  const bandH = 72, bandGap = 18;
+  const totalH = 3*bandH + 2*bandGap;
+  const bandTop = flowTop + (H - flowTop - 46 - totalH)/2;
+
+  const hl = highlightCols;
+  function colAlpha(col, base) {
+    if (!hl) return base;
+    if (hl.includes(col)) return base * (1.0 + 0.4 * Math.sin(pulsePhase));
+    return base * 0.15;
+  }
+  function flowAlpha(c1, c2, base) {
+    if (!hl) return base;
+    if (hl.includes(c1) && hl.includes(c2)) return base * (1.0 + 0.5 * Math.sin(pulsePhase));
+    if (hl.includes(c1) || hl.includes(c2)) return base * 0.5;
+    return base * 0.1;
+  }
+
+  people.forEach((p, pi) => {
+    const by = bandTop + pi*(bandH+bandGap);
+    const color = p.color;
+    const nc = p.cookies.length;
+    const ckH = Math.floor((bandH - (nc-1)*4)/nc);
+
+    drawNode(ctx, cx[0], by, nw, bandH, color, colAlpha(0,0.85));
+    label(ctx, p.label, cx[0]-nw/2-6, by+bandH/2+4, color, 'right', 10);
+
+    bezFill(ctx, cx[0]+nw/2, by, by+bandH, cx[1]-nw/2, by, by+bandH, color, flowAlpha(0,1,0.14));
+    bezLine(ctx, cx[0]+nw/2, by+bandH/2, cx[1]-nw/2, by+bandH/2, color, flowAlpha(0,1,0.35), 2);
+
+    drawNode(ctx, cx[1], by, nw, bandH, color, colAlpha(1,0.85));
+    label(ctx, p.zid, cx[1]+nw/2+6, by+bandH/2+4, color, 'left', 9);
+
+    for (let ci = 0; ci < nc; ci++) {
+      const cy = by + ci*(ckH+4);
+
+      bezFill(ctx, cx[1]+nw/2, by, by+bandH, cx[2]-nw/2, cy, cy+ckH, color, flowAlpha(1,2,0.12));
+      bezLine(ctx, cx[1]+nw/2, by+bandH/2, cx[2]-nw/2, cy+ckH/2, color, flowAlpha(1,2,0.28), 1);
+
+      drawNode(ctx, cx[2], cy, nw, ckH, color, colAlpha(2,0.85));
+      label(ctx, p.cookies[ci], cx[2]+nw/2+6, cy+ckH/2+4, color, 'left', 8);
+
+      bezFill(ctx, cx[2]+nw/2, cy, cy+ckH, cx[3]-nw/2, cy, cy+ckH, color, flowAlpha(2,3,0.10));
+      bezLine(ctx, cx[2]+nw/2, cy+ckH/2, cx[3]-nw/2, cy+ckH/2, color, flowAlpha(2,3,0.22), 1);
+      drawNode(ctx, cx[3], cy, nw, ckH, color, colAlpha(3,0.85));
+
+      bezFill(ctx, cx[3]+nw/2, cy, cy+ckH, cx[4]-nw/2, cy, cy+ckH, color, flowAlpha(3,4,0.10));
+      bezLine(ctx, cx[3]+nw/2, cy+ckH/2, cx[4]-nw/2, cy+ckH/2, color, flowAlpha(3,4,0.22), 1);
+      drawNode(ctx, cx[4], cy, nw, ckH, color, colAlpha(4,0.85));
+
+      bezFill(ctx, cx[4]+nw/2, cy, cy+ckH, cx[5]-nw/2, by, by+bandH, color, flowAlpha(4,5,0.12));
+      bezLine(ctx, cx[4]+nw/2, cy+ckH/2, cx[5]-nw/2, by+bandH/2, color, flowAlpha(4,5,0.28), 1);
+    }
+
+    drawNode(ctx, cx[5], by, nw, bandH, color, colAlpha(5,0.85));
+    label(ctx, p.zid, cx[5]+nw/2+6, by+bandH/2+4, color, 'left', 9);
+
+    bezFill(ctx, cx[5]+nw/2, by, by+bandH, cx[6]-nw/2, by, by+bandH, color, flowAlpha(5,6,0.14));
+    bezLine(ctx, cx[5]+nw/2, by+bandH/2, cx[6]-nw/2, by+bandH/2, color, flowAlpha(5,6,0.35), 2);
+    drawNode(ctx, cx[6], by, nw, bandH, color, colAlpha(6,0.85));
+
+    bezFill(ctx, cx[6]+nw/2, by, by+bandH, cx[7]-nw/2, by, by+bandH, color, flowAlpha(6,7,0.14));
+    bezLine(ctx, cx[6]+nw/2, by+bandH/2, cx[7]-nw/2, by+bandH/2, color, flowAlpha(6,7,0.35), 2);
+    drawNode(ctx, cx[7], by, nw, bandH, color, colAlpha(7,0.85));
+    label(ctx, p.label, cx[7]+nw/2+6, by+bandH/2+4, color, 'left', 10);
+
+    ctx.font = "600 10px 'Inter',sans-serif";
+    ctx.fillStyle = COLORS.green; ctx.textAlign = 'left';
+    ctx.globalAlpha = colAlpha(7, 1);
+    ctx.fillText('\u2713', cx[7]+nw/2+58, by+bandH/2+4);
+    ctx.globalAlpha = 1;
+  });
+
+  tag(ctx, '3 people', cx[0], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
+  tag(ctx, '3 ZIDs (1:1)', cx[1], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
+  tag(ctx, '7 cookies (same owners)', cx[2], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
+  tag(ctx, '7 cookies', cx[3], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
+  tag(ctx, 'same 7', cx[4], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
+  tag(ctx, '3 ZIDs', cx[5], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
+  tag(ctx, 'same 3', cx[6], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
+  tag(ctx, '3 people \u2713', cx[7], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
+}
+
+
+// ============================================================
+//  DRAW ALL
+// ============================================================
+function drawAll() {
+  drawBrokenSankey(brokenHighlightCols);
+  drawFixedSankey(fixedHighlightCols);
+}
+
+window.addEventListener('load', drawAll);
+window.addEventListener('resize', drawAll);
+
+
+// ============================================================
+//  ZOOM INTERACTION
+// ============================================================
+let zoomedBrokenStep = null;
+let zoomedFixedStep = null;
+
+function setZoom(blockId, stepIdx) {
+  const block = document.getElementById(blockId);
+  const stepsRow = block.querySelector('.steps-row');
+  const cards = stepsRow.querySelectorAll('.step-card');
+  const calloutRows = block.querySelectorAll('.callout-row');
+  const scrollWrap = document.getElementById('scrollWrap');
+  const isBroken = blockId === 'brokenBlock';
+
+  const wasZoomed = isBroken ? zoomedBrokenStep : zoomedFixedStep;
+  const isToggleOff = wasZoomed === stepIdx;
+
+  if (isToggleOff) {
+    // ZOOM OUT
+    block.classList.remove('zoomed');
+    cards.forEach(c => { c.classList.remove('zoom-focus','zoom-visible'); });
+    calloutRows.forEach(row => {
+      row.querySelectorAll('.callout').forEach(c => c.classList.remove('zoom-visible'));
+    });
+
+    if (isBroken) { zoomedBrokenStep = null; brokenHighlightCols = null; }
+    else           { zoomedFixedStep = null;  fixedHighlightCols = null; }
+
+    stopPulse();
+    drawAll();
+    return;
+  }
+
+  // ZOOM IN
+  block.classList.add('zoomed');
+
+  if (isBroken) zoomedBrokenStep = stepIdx;
+  else          zoomedFixedStep = stepIdx;
+
+  const visibleRange = [
+    Math.max(0, stepIdx - 1),
+    stepIdx,
+    Math.min(7, stepIdx + 1),
+  ];
+
+  cards.forEach((c, i) => {
+    c.classList.remove('zoom-focus', 'zoom-visible');
+    if (i === stepIdx) c.classList.add('zoom-focus');
+    else if (visibleRange.includes(i)) c.classList.add('zoom-visible');
+  });
+
+  calloutRows.forEach(row => {
+    row.querySelectorAll('.callout').forEach(c => {
+      const col = parseInt(c.dataset.col);
+      c.classList.toggle('zoom-visible', visibleRange.includes(col));
+    });
+  });
+
+  // Highlight Sankey columns
+  const hlCols = visibleRange;
+  if (isBroken) brokenHighlightCols = hlCols;
+  else          fixedHighlightCols = hlCols;
+
+  startPulse();
+
+  // Scroll to center the focused step
+  const card = cards[stepIdx];
+  const cardRect = card.getBoundingClientRect();
+  const wrapRect = scrollWrap.getBoundingClientRect();
+  const targetScroll = scrollWrap.scrollLeft + (cardRect.left - wrapRect.left) - (wrapRect.width / 2) + (cardRect.width / 2);
+  scrollWrap.scrollTo({ left: targetScroll, behavior: 'smooth' });
+}
+
+function startPulse() {
+  if (pulseRAF) return;
+  const start = performance.now();
+  function tick(now) {
+    pulsePhase = ((now - start) / 600) % (Math.PI * 2);
+    drawAll();
+    pulseRAF = requestAnimationFrame(tick);
+  }
+  pulseRAF = requestAnimationFrame(tick);
+}
+
+function stopPulse() {
+  if (!brokenHighlightCols && !fixedHighlightCols) {
+    cancelAnimationFrame(pulseRAF);
+    pulseRAF = null;
+    pulsePhase = 0;
+    drawAll();
+  }
+}
+
+// Attach click handlers
+document.querySelectorAll('#brokenSteps .step-card').forEach(card => {
+  card.addEventListener('click', () => setZoom('brokenBlock', parseInt(card.dataset.step)));
+});
+document.querySelectorAll('#fixedSteps .step-card').forEach(card => {
+  card.addEventListener('click', () => setZoom('fixedBlock', parseInt(card.dataset.step)));
+});
+</script>
+</body>
+</html>
