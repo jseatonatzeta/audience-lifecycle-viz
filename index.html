@@ -154,7 +154,7 @@ body > * { position: relative; z-index: 1; }
 
 /* ---- Phase row ---- */
 .phase-row {
-  display: grid; grid-template-columns: repeat(8, 1fr);
+  display: grid; grid-template-columns: repeat(7, 1fr);
   gap: 6px; margin-bottom: 4px;
 }
 .phase-cell {
@@ -169,7 +169,7 @@ body > * { position: relative; z-index: 1; }
 
 /* ---- Steps row ---- */
 .steps-row {
-  display: grid; grid-template-columns: repeat(8, 1fr);
+  display: grid; grid-template-columns: repeat(7, 1fr);
   gap: 6px; margin-bottom: 4px;
 }
 
@@ -243,7 +243,7 @@ body > * { position: relative; z-index: 1; }
 
 /* ---- Callout row ---- */
 .callout-row {
-  display: grid; grid-template-columns: repeat(8, 1fr);
+  display: grid; grid-template-columns: repeat(7, 1fr);
   gap: 6px; margin-bottom: 3px;
 }
 .callout {
@@ -380,7 +380,6 @@ body > * { position: relative; z-index: 1; }
     <div class="phase-cell phase-start">In-Flight</div>
     <div class="phase-cell phase-start"></div>
     <div class="phase-cell phase-start">Post-Campaign</div>
-    <div class="phase-cell phase-start"></div>
   </div>
 
   <div class="steps-row" id="brokenSteps">
@@ -417,12 +416,7 @@ body > * { position: relative; z-index: 1; }
     <div class="step-card" data-step="6">
       <div class="step-num">7</div>
       <div class="step-title">Customer Pulse: Reverse Resolution</div>
-      <div class="step-desc">Cookies &rarr; email_md5s. Demographics from <code>demographics_raw_data_parquet</code>.</div>
-    </div>
-    <div class="step-card" data-step="7">
-      <div class="step-num">8</div>
-      <div class="step-title">Report Delivered</div>
-      <div class="step-desc"><strong>No targeting context.</strong> Standalone demographic breakdown. Bell curve at 45-54.</div>
+      <div class="step-desc">Cookies &rarr; email_md5s. Demographics from <code>demographics_raw_data_parquet</code>. <strong>No targeting context.</strong></div>
     </div>
   </div>
 
@@ -444,12 +438,8 @@ body > * { position: relative; z-index: 1; }
     </div>
     <div class="callout callout-empty" data-col="5"></div>
     <div class="callout callout-red" data-col="6">
-      <div class="cl-label">#4 Different Tables &nbsp;|&nbsp; #5 Round-Trip</div>
-      <div class="cl-detail">Targeting: cookie-keyed. Reporting: email_md5-keyed. Reverse resolution fans out 2x+, bringing back people who were never targeted.</div>
-    </div>
-    <div class="callout callout-red" data-col="7">
-      <div class="cl-label">#6 No Targeting Context</div>
-      <div class="cl-detail">&ldquo;Who we reached&rdquo; but not &ldquo;did we reach who we targeted?&rdquo;</div>
+      <div class="cl-label">#4 Different Tables &nbsp;|&nbsp; #5 Round-Trip &nbsp;|&nbsp; #6 No Context</div>
+      <div class="cl-detail">Reverse resolution fans out 2x+, bringing back untargeted people. No targeting context in report.</div>
     </div>
   </div>
 
@@ -470,7 +460,6 @@ body > * { position: relative; z-index: 1; }
       <div class="cl-label">Config Not Accessible</div>
       <div class="cl-detail">DSP targeting config not piped to reporting.</div>
     </div>
-    <div class="callout callout-empty" data-col="7"></div>
   </div>
 
   <!-- Inline Sankey for broken flow -->
@@ -502,7 +491,6 @@ body > * { position: relative; z-index: 1; }
     <div class="phase-cell phase-start">In-Flight</div>
     <div class="phase-cell phase-start"></div>
     <div class="phase-cell phase-start">Post-Campaign</div>
-    <div class="phase-cell phase-start"></div>
   </div>
 
   <div class="steps-row" id="fixedSteps">
@@ -538,13 +526,8 @@ body > * { position: relative; z-index: 1; }
     </div>
     <div class="step-card" data-step="6">
       <div class="step-num">7</div>
-      <div class="step-title">In-Group / Out-of-Group</div>
-      <div class="step-desc">Impressions vs. targeting criteria. Per-channel. Household/cross-device separated.</div>
-    </div>
-    <div class="step-card" data-step="7">
-      <div class="step-num">8</div>
-      <div class="step-title">Report Delivered</div>
-      <div class="step-desc">Unified source, intent comparison, all paths agree on ZID.</div>
+      <div class="step-title">In-Group / Out-of-Group Report</div>
+      <div class="step-desc">Impressions vs. targeting criteria. Per-channel. Household/cross-device separated. All paths agree on ZID.</div>
     </div>
   </div>
 
@@ -572,12 +555,8 @@ body > * { position: relative; z-index: 1; }
       <div class="cl-detail">cookie &rarr; ZID &rarr; demographics. Same source as targeting. Fixes #4, #5.</div>
     </div>
     <div class="callout callout-green" data-col="6">
-      <div class="cl-label">Intent vs. Delivery</div>
-      <div class="cl-detail">In-group / out-of-group. Divergences auto-flagged. Fixes #6 + contributing factors.</div>
-    </div>
-    <div class="callout callout-green" data-col="7">
-      <div class="cl-label">All Paths Agree</div>
-      <div class="cl-detail">Every reporting path keys on ZID + same demographic source.</div>
+      <div class="cl-label">Intent vs. Delivery &nbsp;|&nbsp; All Paths Agree</div>
+      <div class="cl-detail">In-group / out-of-group. Divergences auto-flagged. Every path keys on ZID. Fixes #6.</div>
     </div>
   </div>
 
@@ -640,7 +619,7 @@ function setupCanvas(canvas, heightPx) {
 }
 
 function getColCenters(W) {
-  const n = 8, gap = 6;
+  const n = 7, gap = 6;
   const colW = (W - gap * (n - 1)) / n;
   return Array.from({ length: n }, (_, i) => i * (colW + gap) + colW / 2);
 }
@@ -714,7 +693,6 @@ function drawBrokenSankey(highlightCols) {
   label(ctx, 'cookies (targeting)', cx[4], colLabelY, COLORS.dim, 'center', 10);
   label(ctx, 'impression cookies', cx[5], colLabelY, COLORS.dim, 'center', 10);
   label(ctx, 'reverse \u2192 email_md5', cx[6], colLabelY, COLORS.red, 'center', 10);
-  label(ctx, 'report demographics', cx[7], colLabelY, COLORS.dim, 'center', 10);
 
   const srcH = 60, srcGap = 16;
   const totalSrc = 3*srcH + 2*srcGap;
@@ -833,11 +811,6 @@ function drawBrokenSankey(highlightCols) {
     bezLine(ctx, cx[5]+nw/2, ck.y+ck.h/2, cx[6]-nw/2, re.y+re.h/2, fc, flowAlpha(5,6,0.6), 2.5);
   });
 
-  // col 6→7 (report demographics)
-  revEmails.forEach(re => {
-    bezFill(ctx, cx[6]+nw/2, re.y, re.y+re.h, cx[7]-nw/2, re.y, re.y+re.h, re.color, flowAlpha(6,7,0.10));
-    bezLine(ctx, cx[6]+nw/2, re.y+re.h/2, cx[7]-nw/2, re.y+re.h/2, re.color, flowAlpha(6,7,0.25), 1);
-  });
 
   // NODES
   src.forEach(s => {
@@ -857,12 +830,10 @@ function drawBrokenSankey(highlightCols) {
     label(ctx, ck.label, cx[2]+nw/2+6, ck.y+ck.h/2+4, ck.color, 'left', 9);
   });
 
-  [6,7].forEach(col => {
-    revEmails.forEach(re => drawNode(ctx, cx[col], re.y, nw, re.h, re.color, colAlpha(col,0.85)));
-  });
+  revEmails.forEach(re => drawNode(ctx, cx[6], re.y, nw, re.h, re.color, colAlpha(6,0.85)));
 
   revEmails.forEach(re => {
-    label(ctx, re.label, cx[7]+nw/2+6, re.y+re.h/2+4, re.color, 'left', 8);
+    label(ctx, re.label, cx[6]+nw/2+6, re.y+re.h/2+4, re.color, 'left', 8);
   });
 
   // FAN-OUT GLOW ZONES — red halos behind the two fan-out regions
@@ -900,8 +871,8 @@ function drawBrokenSankey(highlightCols) {
     if (!re.orig) {
       ctx.font = "700 8px 'Inter',sans-serif";
       ctx.fillStyle = COLORS.red; ctx.textAlign = 'left';
-      ctx.globalAlpha = colAlpha(7, 1);
-      ctx.fillText('NEW', cx[7]+nw/2+52, re.y+re.h/2+3);
+      ctx.globalAlpha = colAlpha(6, 1);
+      ctx.fillText('NEW', cx[6]+nw/2+52, re.y+re.h/2+3);
       ctx.globalAlpha = 1;
     }
   });
@@ -909,7 +880,7 @@ function drawBrokenSankey(highlightCols) {
   tag(ctx, '3 people', cx[0], H - 18, 'rgba(255,255,255,0.05)', COLORS.muted, 10);
   tag(ctx, '3 emails', cx[1], H - 18, 'rgba(255,255,255,0.05)', COLORS.muted, 10);
   tag(ctx, '8 cookies', cx[3], H - 18, 'rgba(239,68,68,0.14)', COLORS.red, 10);
-  tag(ctx, '16 emails', cx[7], H - 18, 'rgba(239,68,68,0.14)', COLORS.red, 10);
+  tag(ctx, '16 emails', cx[6], H - 18, 'rgba(239,68,68,0.14)', COLORS.red, 10);
 }
 
 
@@ -931,8 +902,7 @@ function drawFixedSankey(highlightCols) {
   label(ctx, 'cookies in DSP', cx[3], colLabelY, COLORS.dim, 'center', 10);
   label(ctx, 'cookies (targeting)', cx[4], colLabelY, COLORS.dim, 'center', 10);
   label(ctx, 'impression \u2192 ZID', cx[5], colLabelY, COLORS.green, 'center', 10);
-  label(ctx, 'ZID \u2192 demographics', cx[6], colLabelY, COLORS.green, 'center', 10);
-  label(ctx, 'report (same person)', cx[7], colLabelY, COLORS.dim, 'center', 10);
+  label(ctx, 'ZID \u2192 report', cx[6], colLabelY, COLORS.green, 'center', 10);
 
   const people = [
     { color: COLORS.alice, label: 'alice@', cookies: ['ck_A1','ck_A2'], zid: 'ZID_1' },
@@ -1000,16 +970,12 @@ function drawFixedSankey(highlightCols) {
     bezFill(ctx, cx[5]+nw/2, by, by+bandH, cx[6]-nw/2, by, by+bandH, COLORS.green, flowAlpha(5,6,0.20));
     bezLine(ctx, cx[5]+nw/2, by+bandH/2, cx[6]-nw/2, by+bandH/2, COLORS.green, flowAlpha(5,6,0.5), 2.5);
     drawNode(ctx, cx[6], by, nw, bandH, color, colAlpha(6,0.85));
-
-    bezFill(ctx, cx[6]+nw/2, by, by+bandH, cx[7]-nw/2, by, by+bandH, color, flowAlpha(6,7,0.14));
-    bezLine(ctx, cx[6]+nw/2, by+bandH/2, cx[7]-nw/2, by+bandH/2, color, flowAlpha(6,7,0.35), 2);
-    drawNode(ctx, cx[7], by, nw, bandH, color, colAlpha(7,0.85));
-    label(ctx, p.label, cx[7]+nw/2+6, by+bandH/2+4, color, 'left', 10);
+    label(ctx, p.label, cx[6]+nw/2+6, by+bandH/2+4, color, 'left', 10);
 
     ctx.font = "600 10px 'Inter',sans-serif";
     ctx.fillStyle = COLORS.green; ctx.textAlign = 'left';
-    ctx.globalAlpha = colAlpha(7, 1);
-    ctx.fillText('\u2713', cx[7]+nw/2+58, by+bandH/2+4);
+    ctx.globalAlpha = colAlpha(6, 1);
+    ctx.fillText('\u2713', cx[6]+nw/2+58, by+bandH/2+4);
     ctx.globalAlpha = 1;
   });
 
@@ -1025,8 +991,7 @@ function drawFixedSankey(highlightCols) {
   tag(ctx, '7 cookies', cx[3], H-18, 'rgba(34,197,94,0.14)', COLORS.green, 10);
   tag(ctx, 'same 7', cx[4], H-18, 'rgba(34,197,94,0.14)', COLORS.green, 10);
   tag(ctx, '\u2705  3 ZIDs', cx[5], H-18, 'rgba(34,197,94,0.18)', COLORS.green, 11);
-  tag(ctx, 'same 3', cx[6], H-18, 'rgba(34,197,94,0.14)', COLORS.green, 10);
-  tag(ctx, '\u2705  3 people', cx[7], H-18, 'rgba(34,197,94,0.18)', COLORS.green, 11);
+  tag(ctx, '\u2705  3 people', cx[6], H-18, 'rgba(34,197,94,0.18)', COLORS.green, 11);
 }
 
 
