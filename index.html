@@ -222,16 +222,23 @@ body > * { position: relative; z-index: 1; }
   border: 1px solid var(--border);
 }
 
-/* Zoom dimming */
-.timeline-block.zoomed .step-card { opacity: 0.2; transition: opacity 0.4s; }
-.timeline-block.zoomed .step-card.zoom-visible { opacity: 1; }
-.timeline-block.zoomed .step-card.zoom-focus {
-  opacity: 1;
-  border-color: rgba(255,255,255,0.25);
-  box-shadow: 0 0 30px rgba(255,255,255,0.06), 0 0 60px rgba(34,197,94,0.04);
+/* Dock-style interaction */
+.step-card {
+  transform-origin: center bottom;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.3s ease,
+              border-color 0.3s, background 0.3s, box-shadow 0.3s;
 }
-.broken.zoomed .step-card.zoom-focus {
-  box-shadow: 0 0 30px rgba(255,255,255,0.06), 0 0 60px rgba(239,68,68,0.06);
+.step-card.dock-focus {
+  border-color: rgba(255,255,255,0.25);
+  z-index: 10;
+  position: relative;
+}
+.broken .step-card.dock-focus {
+  box-shadow: 0 0 30px rgba(239,68,68,0.12), 0 4px 20px rgba(0,0,0,0.4);
+}
+.fixed .step-card.dock-focus {
+  box-shadow: 0 0 30px rgba(34,197,94,0.12), 0 4px 20px rgba(0,0,0,0.4);
 }
 
 /* ---- Callout row ---- */
@@ -263,8 +270,10 @@ body > * { position: relative; z-index: 1; }
 .callout-amber .cl-detail { color: rgba(245,158,11,0.8); }
 .callout-green .cl-detail { color: var(--greenTxt); }
 
-.timeline-block.zoomed .callout { opacity: 0.12; }
-.timeline-block.zoomed .callout.zoom-visible { opacity: 1; }
+.callout {
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center top;
+}
 
 /* ---- Sankey canvas row ---- */
 .sankey-row { position: relative; margin: 4px 0 2px; }
@@ -348,7 +357,7 @@ body > * { position: relative; z-index: 1; }
   <div class="legend-item"><div class="legend-dot amber"></div>Contributing factor</div>
 </div>
 
-<div class="zoom-hint">Click any step to zoom in. Click again to zoom out.</div>
+<div class="zoom-hint">Click any step to focus &mdash; neighbors scale like a dock. Click again to reset.</div>
 
 <div class="scroll-wrap" id="scrollWrap">
 
@@ -779,32 +788,36 @@ function drawBrokenSankey(highlightCols) {
     return base * 0.1;
   }
 
-  // FLOWS
+  // FLOWS — col 0→1 (email pass-through, calm)
   src.forEach(s => {
     bezFill(ctx, cx[0]+nw/2, s.y, s.y+s.h, cx[1]-nw/2, s.y, s.y+s.h, s.color, flowAlpha(0,1,0.14));
     bezLine(ctx, cx[0]+nw/2, s.y+s.h/2, cx[1]-nw/2, s.y+s.h/2, s.color, flowAlpha(0,1,0.35), 1.5);
   });
 
+  // FAN-OUT ZONE 1: col 1→2 (email → cookies via ZIGS) — EMPHASIZED
   cookies.forEach(ck => {
     const froms = Array.isArray(ck.from) ? ck.from : [ck.from];
     froms.forEach(fi => {
       const s = src[fi];
-      const fc = ck.shared ? COLORS.red : s.color;
-      bezFill(ctx, cx[1]+nw/2, s.y, s.y+s.h, cx[2]-nw/2, ck.y, ck.y+ck.h, fc, flowAlpha(1,2,0.13));
-      bezLine(ctx, cx[1]+nw/2, s.y+s.h/2, cx[2]-nw/2, ck.y+ck.h/2, fc, flowAlpha(1,2,0.3), 1.5);
+      const fc = ck.shared ? COLORS.red : COLORS.red;
+      bezFill(ctx, cx[1]+nw/2, s.y, s.y+s.h, cx[2]-nw/2, ck.y, ck.y+ck.h, fc, flowAlpha(1,2,0.28));
+      bezLine(ctx, cx[1]+nw/2, s.y+s.h/2, cx[2]-nw/2, ck.y+ck.h/2, fc, flowAlpha(1,2,0.55), 2.5);
     });
   });
 
+  // col 2→3 (cookies into DSP, moderate)
   cookies.forEach(ck => {
     bezFill(ctx, cx[2]+nw/2, ck.y, ck.y+ck.h, cx[3]-nw/2, ck.y, ck.y+ck.h, ck.color, flowAlpha(2,3,0.10));
     bezLine(ctx, cx[2]+nw/2, ck.y+ck.h/2, cx[3]-nw/2, ck.y+ck.h/2, ck.color, flowAlpha(2,3,0.25), 1);
   });
 
+  // col 3→4 (targeting, moderate)
   cookies.forEach(ck => {
     bezFill(ctx, cx[3]+nw/2, ck.y, ck.y+ck.h, cx[4]-nw/2, ck.y, ck.y+ck.h, ck.color, flowAlpha(3,4,0.10));
     bezLine(ctx, cx[3]+nw/2, ck.y+ck.h/2, cx[4]-nw/2, ck.y+ck.h/2, ck.color, flowAlpha(3,4,0.25), 1);
   });
 
+  // col 4→5 (in-flight impressions)
   cookies.forEach(ck => {
     const sa = ck.stale ? 0.04 : 0.10;
     const la = ck.stale ? 0.06 : 0.25;
@@ -812,13 +825,15 @@ function drawBrokenSankey(highlightCols) {
     bezLine(ctx, cx[4]+nw/2, ck.y+ck.h/2, cx[5]-nw/2, ck.y+ck.h/2, ck.color, flowAlpha(4,5,la), 1);
   });
 
+  // FAN-OUT ZONE 2: col 5→6 (reverse resolution) — EMPHASIZED
   ckToRev.forEach(([ci,ri]) => {
     const ck = cookies[ci], re = revEmails[ri];
-    const fc = re.orig ? ck.color : COLORS.red;
-    bezFill(ctx, cx[5]+nw/2, ck.y, ck.y+ck.h, cx[6]-nw/2, re.y, re.y+re.h, fc, flowAlpha(5,6,0.13));
-    bezLine(ctx, cx[5]+nw/2, ck.y+ck.h/2, cx[6]-nw/2, re.y+re.h/2, fc, flowAlpha(5,6,0.3), 1.5);
+    const fc = re.orig ? COLORS.amber : COLORS.red;
+    bezFill(ctx, cx[5]+nw/2, ck.y, ck.y+ck.h, cx[6]-nw/2, re.y, re.y+re.h, fc, flowAlpha(5,6,0.30));
+    bezLine(ctx, cx[5]+nw/2, ck.y+ck.h/2, cx[6]-nw/2, re.y+re.h/2, fc, flowAlpha(5,6,0.6), 2.5);
   });
 
+  // col 6→7 (report demographics)
   revEmails.forEach(re => {
     bezFill(ctx, cx[6]+nw/2, re.y, re.y+re.h, cx[7]-nw/2, re.y, re.y+re.h, re.color, flowAlpha(6,7,0.10));
     bezLine(ctx, cx[6]+nw/2, re.y+re.h/2, cx[7]-nw/2, re.y+re.h/2, re.color, flowAlpha(6,7,0.25), 1);
@@ -850,27 +865,40 @@ function drawBrokenSankey(highlightCols) {
     label(ctx, re.label, cx[7]+nw/2+6, re.y+re.h/2+4, re.color, 'left', 8);
   });
 
+  // FAN-OUT GLOW ZONES — red halos behind the two fan-out regions
+  const glowAlpha1 = hl ? (hl.includes(1) || hl.includes(2) ? 0.06 : 0.01) : 0.04;
+  const glowAlpha2 = hl ? (hl.includes(5) || hl.includes(6) ? 0.06 : 0.01) : 0.04;
+  const grd1 = ctx.createRadialGradient((cx[1]+cx[2])/2, H/2, 10, (cx[1]+cx[2])/2, H/2, (cx[2]-cx[1])*0.8);
+  grd1.addColorStop(0, `rgba(239,68,68,${glowAlpha1*3})`);
+  grd1.addColorStop(1, 'rgba(239,68,68,0)');
+  ctx.fillStyle = grd1; ctx.fillRect(cx[1]-40, flowTop, cx[2]-cx[1]+80, H-flowTop-40);
+  const grd2 = ctx.createRadialGradient((cx[5]+cx[6])/2, H/2, 10, (cx[5]+cx[6])/2, H/2, (cx[6]-cx[5])*0.8);
+  grd2.addColorStop(0, `rgba(239,68,68,${glowAlpha2*3})`);
+  grd2.addColorStop(1, 'rgba(239,68,68,0)');
+  ctx.fillStyle = grd2; ctx.fillRect(cx[5]-40, flowTop, cx[6]-cx[5]+80, H-flowTop-40);
+
   // ANNOTATIONS
-  tag(ctx, '3 \u2192 8  FAN-OUT', (cx[1]+cx[2])/2, H - 20, 'rgba(239,68,68,0.15)', COLORS.red, 11);
+  tag(ctx, '\u26A0  3 \u2192 8  FAN-OUT', (cx[1]+cx[2])/2, H - 18, 'rgba(239,68,68,0.22)', COLORS.red, 13);
 
   const shCk = cookies[2];
-  ctx.font = "600 9px 'Inter',sans-serif";
+  ctx.font = "700 10px 'Inter',sans-serif";
   ctx.fillStyle = COLORS.red; ctx.textAlign = 'left';
   ctx.globalAlpha = colAlpha(2, 1);
   ctx.fillText('\u26A0 shared cookie', cx[2]+nw/2+6, shCk.y+shCk.h+14);
   ctx.globalAlpha = 1;
 
   const stCk = cookies[7];
+  ctx.font = "600 9px 'Inter',sans-serif";
   ctx.fillStyle = COLORS.amber;
   ctx.globalAlpha = colAlpha(4, 1);
   ctx.fillText('\u23F3 stale (365d)', cx[3]+nw/2+6, stCk.y+stCk.h/2+4);
   ctx.globalAlpha = 1;
 
-  tag(ctx, '7 \u2192 16  (12 NEW PEOPLE)', (cx[5]+cx[6])/2, H - 20, 'rgba(239,68,68,0.15)', COLORS.red, 11);
+  tag(ctx, '\u26A0  7 \u2192 16  (12 NEW PEOPLE)', (cx[5]+cx[6])/2, H - 18, 'rgba(239,68,68,0.22)', COLORS.red, 13);
 
   revEmails.forEach(re => {
     if (!re.orig) {
-      ctx.font = "600 7px 'Inter',sans-serif";
+      ctx.font = "700 8px 'Inter',sans-serif";
       ctx.fillStyle = COLORS.red; ctx.textAlign = 'left';
       ctx.globalAlpha = colAlpha(7, 1);
       ctx.fillText('NEW', cx[7]+nw/2+52, re.y+re.h/2+3);
@@ -878,10 +906,10 @@ function drawBrokenSankey(highlightCols) {
     }
   });
 
-  tag(ctx, '3 people', cx[0], H - 20, 'rgba(255,255,255,0.05)', COLORS.muted, 10);
-  tag(ctx, '3 emails', cx[1], H - 20, 'rgba(255,255,255,0.05)', COLORS.muted, 10);
-  tag(ctx, '8 cookies', cx[3], H - 20, 'rgba(239,68,68,0.12)', COLORS.red, 10);
-  tag(ctx, '16 emails', cx[7], H - 20, 'rgba(239,68,68,0.12)', COLORS.red, 10);
+  tag(ctx, '3 people', cx[0], H - 18, 'rgba(255,255,255,0.05)', COLORS.muted, 10);
+  tag(ctx, '3 emails', cx[1], H - 18, 'rgba(255,255,255,0.05)', COLORS.muted, 10);
+  tag(ctx, '8 cookies', cx[3], H - 18, 'rgba(239,68,68,0.14)', COLORS.red, 10);
+  tag(ctx, '16 emails', cx[7], H - 18, 'rgba(239,68,68,0.14)', COLORS.red, 10);
 }
 
 
@@ -961,15 +989,16 @@ function drawFixedSankey(highlightCols) {
       bezLine(ctx, cx[3]+nw/2, cy+ckH/2, cx[4]-nw/2, cy+ckH/2, color, flowAlpha(3,4,0.22), 1);
       drawNode(ctx, cx[4], cy, nw, ckH, color, colAlpha(4,0.85));
 
-      bezFill(ctx, cx[4]+nw/2, cy, cy+ckH, cx[5]-nw/2, by, by+bandH, color, flowAlpha(4,5,0.12));
-      bezLine(ctx, cx[4]+nw/2, cy+ckH/2, cx[5]-nw/2, by+bandH/2, color, flowAlpha(4,5,0.28), 1);
+      // CONVERGENCE: cookies → ZID (emphasized with green)
+      bezFill(ctx, cx[4]+nw/2, cy, cy+ckH, cx[5]-nw/2, by, by+bandH, COLORS.green, flowAlpha(4,5,0.18));
+      bezLine(ctx, cx[4]+nw/2, cy+ckH/2, cx[5]-nw/2, by+bandH/2, COLORS.green, flowAlpha(4,5,0.45), 2);
     }
 
     drawNode(ctx, cx[5], by, nw, bandH, color, colAlpha(5,0.85));
     label(ctx, p.zid, cx[5]+nw/2+6, by+bandH/2+4, color, 'left', 9);
 
-    bezFill(ctx, cx[5]+nw/2, by, by+bandH, cx[6]-nw/2, by, by+bandH, color, flowAlpha(5,6,0.14));
-    bezLine(ctx, cx[5]+nw/2, by+bandH/2, cx[6]-nw/2, by+bandH/2, color, flowAlpha(5,6,0.35), 2);
+    bezFill(ctx, cx[5]+nw/2, by, by+bandH, cx[6]-nw/2, by, by+bandH, COLORS.green, flowAlpha(5,6,0.20));
+    bezLine(ctx, cx[5]+nw/2, by+bandH/2, cx[6]-nw/2, by+bandH/2, COLORS.green, flowAlpha(5,6,0.5), 2.5);
     drawNode(ctx, cx[6], by, nw, bandH, color, colAlpha(6,0.85));
 
     bezFill(ctx, cx[6]+nw/2, by, by+bandH, cx[7]-nw/2, by, by+bandH, color, flowAlpha(6,7,0.14));
@@ -984,14 +1013,20 @@ function drawFixedSankey(highlightCols) {
     ctx.globalAlpha = 1;
   });
 
-  tag(ctx, '3 people', cx[0], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
-  tag(ctx, '3 ZIDs (1:1)', cx[1], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
-  tag(ctx, '7 cookies (same owners)', cx[2], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
-  tag(ctx, '7 cookies', cx[3], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
-  tag(ctx, 'same 7', cx[4], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
-  tag(ctx, '3 ZIDs', cx[5], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
-  tag(ctx, 'same 3', cx[6], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
-  tag(ctx, '3 people \u2713', cx[7], H-18, 'rgba(34,197,94,0.12)', COLORS.green, 10);
+  // GREEN GLOW ZONES — behind the convergence points (col 4→5 and col 0→1)
+  const gGlow1 = ctx.createRadialGradient((cx[4]+cx[5])/2, H/2, 10, (cx[4]+cx[5])/2, H/2, (cx[5]-cx[4])*0.7);
+  gGlow1.addColorStop(0, 'rgba(34,197,94,0.06)');
+  gGlow1.addColorStop(1, 'rgba(34,197,94,0)');
+  ctx.fillStyle = gGlow1; ctx.fillRect(cx[4]-30, flowTop, cx[5]-cx[4]+60, H-flowTop-40);
+
+  tag(ctx, '3 people', cx[0], H-18, 'rgba(34,197,94,0.14)', COLORS.green, 10);
+  tag(ctx, '3 ZIDs (1:1)', cx[1], H-18, 'rgba(34,197,94,0.14)', COLORS.green, 10);
+  tag(ctx, '\u2705  7 cookies (same owners)', cx[2], H-18, 'rgba(34,197,94,0.18)', COLORS.green, 11);
+  tag(ctx, '7 cookies', cx[3], H-18, 'rgba(34,197,94,0.14)', COLORS.green, 10);
+  tag(ctx, 'same 7', cx[4], H-18, 'rgba(34,197,94,0.14)', COLORS.green, 10);
+  tag(ctx, '\u2705  3 ZIDs', cx[5], H-18, 'rgba(34,197,94,0.18)', COLORS.green, 11);
+  tag(ctx, 'same 3', cx[6], H-18, 'rgba(34,197,94,0.14)', COLORS.green, 10);
+  tag(ctx, '\u2705  3 people', cx[7], H-18, 'rgba(34,197,94,0.18)', COLORS.green, 11);
 }
 
 
@@ -1008,76 +1043,97 @@ window.addEventListener('resize', drawAll);
 
 
 // ============================================================
-//  ZOOM INTERACTION
+//  DOCK-STYLE INTERACTION
 // ============================================================
-let zoomedBrokenStep = null;
-let zoomedFixedStep = null;
+let focusBroken = null;
+let focusFixed = null;
 
-function setZoom(blockId, stepIdx) {
+function dockScales(focusIdx, total) {
+  const scales = [];
+  for (let i = 0; i < total; i++) {
+    if (focusIdx === null) { scales.push(1); continue; }
+    const dist = Math.abs(i - focusIdx);
+    if (dist === 0)      scales.push(1.12);
+    else if (dist === 1) scales.push(0.92);
+    else if (dist === 2) scales.push(0.82);
+    else if (dist === 3) scales.push(0.74);
+    else                 scales.push(0.68);
+  }
+  return scales;
+}
+
+function dockOpacities(focusIdx, total) {
+  const ops = [];
+  for (let i = 0; i < total; i++) {
+    if (focusIdx === null) { ops.push(1); continue; }
+    const dist = Math.abs(i - focusIdx);
+    if (dist === 0)      ops.push(1);
+    else if (dist === 1) ops.push(0.85);
+    else if (dist === 2) ops.push(0.55);
+    else if (dist === 3) ops.push(0.35);
+    else                 ops.push(0.2);
+  }
+  return ops;
+}
+
+function applyDock(blockId, stepIdx) {
   const block = document.getElementById(blockId);
-  const stepsRow = block.querySelector('.steps-row');
-  const cards = stepsRow.querySelectorAll('.step-card');
+  const cards = block.querySelectorAll('.steps-row .step-card');
   const calloutRows = block.querySelectorAll('.callout-row');
   const scrollWrap = document.getElementById('scrollWrap');
   const isBroken = blockId === 'brokenBlock';
+  const total = cards.length;
 
-  const wasZoomed = isBroken ? zoomedBrokenStep : zoomedFixedStep;
-  const isToggleOff = wasZoomed === stepIdx;
+  const wasFocused = isBroken ? focusBroken : focusFixed;
+  const isToggle = wasFocused === stepIdx;
 
-  if (isToggleOff) {
-    // ZOOM OUT
-    block.classList.remove('zoomed');
-    cards.forEach(c => { c.classList.remove('zoom-focus','zoom-visible'); });
-    calloutRows.forEach(row => {
-      row.querySelectorAll('.callout').forEach(c => c.classList.remove('zoom-visible'));
-    });
-
-    if (isBroken) { zoomedBrokenStep = null; brokenHighlightCols = null; }
-    else           { zoomedFixedStep = null;  fixedHighlightCols = null; }
-
-    stopPulse();
-    drawAll();
-    return;
+  if (isToggle) {
+    if (isBroken) { focusBroken = null; brokenHighlightCols = null; }
+    else          { focusFixed = null;  fixedHighlightCols = null; }
+  } else {
+    if (isBroken) focusBroken = stepIdx;
+    else          focusFixed = stepIdx;
   }
 
-  // ZOOM IN
-  block.classList.add('zoomed');
-
-  if (isBroken) zoomedBrokenStep = stepIdx;
-  else          zoomedFixedStep = stepIdx;
-
-  const visibleRange = [
-    Math.max(0, stepIdx - 1),
-    stepIdx,
-    Math.min(7, stepIdx + 1),
-  ];
+  const fi = isBroken ? focusBroken : focusFixed;
+  const scales = dockScales(fi, total);
+  const opacities = dockOpacities(fi, total);
 
   cards.forEach((c, i) => {
-    c.classList.remove('zoom-focus', 'zoom-visible');
-    if (i === stepIdx) c.classList.add('zoom-focus');
-    else if (visibleRange.includes(i)) c.classList.add('zoom-visible');
+    c.style.transform = `scale(${scales[i]})`;
+    c.style.opacity = opacities[i];
+    c.classList.toggle('dock-focus', fi === i);
   });
 
   calloutRows.forEach(row => {
     row.querySelectorAll('.callout').forEach(c => {
       const col = parseInt(c.dataset.col);
-      c.classList.toggle('zoom-visible', visibleRange.includes(col));
+      if (!isNaN(col)) {
+        c.style.transform = `scale(${scales[col]})`;
+        c.style.opacity = opacities[col];
+      }
     });
   });
 
-  // Highlight Sankey columns
-  const hlCols = visibleRange;
-  if (isBroken) brokenHighlightCols = hlCols;
-  else          fixedHighlightCols = hlCols;
+  if (fi !== null) {
+    const hlCols = [];
+    for (let d = -1; d <= 1; d++) {
+      const c = fi + d;
+      if (c >= 0 && c < total) hlCols.push(c);
+    }
+    if (isBroken) brokenHighlightCols = hlCols;
+    else          fixedHighlightCols = hlCols;
+    startPulse();
 
-  startPulse();
-
-  // Scroll to center the focused step
-  const card = cards[stepIdx];
-  const cardRect = card.getBoundingClientRect();
-  const wrapRect = scrollWrap.getBoundingClientRect();
-  const targetScroll = scrollWrap.scrollLeft + (cardRect.left - wrapRect.left) - (wrapRect.width / 2) + (cardRect.width / 2);
-  scrollWrap.scrollTo({ left: targetScroll, behavior: 'smooth' });
+    const card = cards[fi];
+    const cardRect = card.getBoundingClientRect();
+    const wrapRect = scrollWrap.getBoundingClientRect();
+    const targetScroll = scrollWrap.scrollLeft + (cardRect.left - wrapRect.left) - (wrapRect.width / 2) + (cardRect.width / 2);
+    scrollWrap.scrollTo({ left: targetScroll, behavior: 'smooth' });
+  } else {
+    stopPulse();
+    drawAll();
+  }
 }
 
 function startPulse() {
@@ -1100,12 +1156,11 @@ function stopPulse() {
   }
 }
 
-// Attach click handlers
 document.querySelectorAll('#brokenSteps .step-card').forEach(card => {
-  card.addEventListener('click', () => setZoom('brokenBlock', parseInt(card.dataset.step)));
+  card.addEventListener('click', () => applyDock('brokenBlock', parseInt(card.dataset.step)));
 });
 document.querySelectorAll('#fixedSteps .step-card').forEach(card => {
-  card.addEventListener('click', () => setZoom('fixedBlock', parseInt(card.dataset.step)));
+  card.addEventListener('click', () => applyDock('fixedBlock', parseInt(card.dataset.step)));
 });
 </script>
 </body>
