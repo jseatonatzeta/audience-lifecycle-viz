@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Pulse: Why ZID Fixes It | Zeta Global</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080816;
+  --surface: rgba(255,255,255,0.03);
+  --raised: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.08);
+  --text: #ffffff;
+  --muted: #9ca3af;
+  --dim: #4b5563;
+  --red: #ef4444;
+  --redBg: rgba(239,68,68,0.06);
+  --redBorder: rgba(239,68,68,0.18);
+  --green: #22c55e;
+  --greenBg: rgba(34,197,94,0.06);
+  --greenBorder: rgba(34,197,94,0.18);
+  --amber: #f59e0b;
+  --amberBg: rgba(245,158,11,0.06);
+  --amberBorder: rgba(245,158,11,0.18);
+  --blue: #60a5fa;
+  --blueBg: rgba(96,165,250,0.06);
+  --blueBorder: rgba(96,165,250,0.18);
+  --cyan: #22d3ee;
+  --purple: #a78bfa;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.55;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(34,197,94,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(6,182,212,0.03) 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
+body > * { position: relative; z-index: 1; }
+
+.page { max-width: 1200px; margin: 0 auto; padding: 48px 32px 64px; }
+
+.brand {
+  display: inline-flex; align-items: center; gap: 10px;
+  margin-bottom: 16px; padding: 6px 16px; border-radius: 100px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+}
+.brand svg { width: 20px; height: 20px; }
+.brand span {
+  font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+
+h1 {
+  font-size: 2.2rem; font-weight: 800; letter-spacing: -0.035em;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #fff 0%, #d1d5db 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.subtitle {
+  font-size: 0.95rem; color: var(--muted); max-width: 720px;
+  line-height: 1.75; margin-bottom: 40px;
+}
+
+/* ---- Section headers ---- */
+.section-label {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 14px;
+}
+.section-label .dot { width: 8px; height: 8px; border-radius: 50%; }
+.section-label.broken { color: var(--red); }
+.section-label.broken .dot { background: var(--red); box-shadow: 0 0 10px rgba(239,68,68,0.4); }
+.section-label.fixed { color: var(--green); }
+.section-label.fixed .dot { background: var(--green); box-shadow: 0 0 10px rgba(34,197,94,0.4); }
+.section-label.timeline { color: var(--blue); }
+.section-label.timeline .dot { background: var(--blue); box-shadow: 0 0 10px rgba(96,165,250,0.4); }
+
+.section-title {
+  font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.section-desc {
+  font-size: 0.82rem; color: var(--muted); margin-bottom: 24px;
+  max-width: 680px; line-height: 1.7;
+}
+
+/* ---- Pipeline flow ---- */
+.pipeline {
+  display: flex; align-items: stretch; gap: 0;
+  margin-bottom: 16px; position: relative;
+}
+.pipe-step {
+  flex: 1; position: relative; padding: 18px 16px 16px;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surface);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  display: flex; flex-direction: column;
+  min-width: 0;
+}
+.pipe-step + .pipe-step { margin-left: 8px; }
+
+.pipe-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem; font-weight: 600;
+  width: 20px; height: 20px; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 8px;
+}
+.broken .pipe-num { background: var(--redBg); color: var(--red); border: 1px solid var(--redBorder); }
+.fixed .pipe-num  { background: var(--greenBg); color: var(--green); border: 1px solid var(--greenBorder); }
+
+.pipe-title {
+  font-weight: 600; font-size: 0.78rem; margin-bottom: 4px;
+  line-height: 1.3; letter-spacing: -0.01em;
+}
+.pipe-desc {
+  font-size: 0.68rem; color: var(--muted); line-height: 1.55; flex: 1;
+}
+.pipe-desc code {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+  background: var(--raised); padding: 1px 4px; border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+/* ID badge inside step */
+.id-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 8px; padding: 3px 8px; border-radius: 100px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem; font-weight: 600;
+}
+.id-badge.bad  { background: var(--redBg);   color: var(--red);   border: 1px solid var(--redBorder); }
+.id-badge.good { background: var(--greenBg); color: var(--green); border: 1px solid var(--greenBorder); }
+.id-badge.warn { background: var(--amberBg); color: var(--amber); border: 1px solid var(--amberBorder); }
+.id-badge.neutral { background: var(--blueBg); color: var(--blue); border: 1px solid var(--blueBorder); }
+
+/* Arrow connectors between steps */
+.pipe-arrow {
+  position: absolute; top: 50%; right: -14px;
+  width: 20px; height: 20px; z-index: 2;
+  transform: translateY(-50%);
+}
+.pipe-arrow svg { width: 20px; height: 20px; }
+
+/* Problem callout */
+.problem-bar {
+  padding: 10px 14px; border-radius: 10px; margin-bottom: 24px;
+  border-left: 3px solid var(--red); background: var(--redBg);
+}
+.problem-bar .pb-label {
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--red); margin-bottom: 2px;
+}
+.problem-bar .pb-detail { font-size: 0.72rem; color: rgba(239,68,68,0.85); line-height: 1.6; }
+
+/* Fix callout */
+.fix-bar {
+  padding: 10px 14px; border-radius: 10px; margin-bottom: 24px;
+  border-left: 3px solid var(--green); background: var(--greenBg);
+}
+.fix-bar .fb-label {
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--green); margin-bottom: 2px;
+}
+.fix-bar .fb-detail { font-size: 0.72rem; color: rgba(34,197,94,0.85); line-height: 1.6; }
+
+/* ZID spine highlight */
+.zid-spine {
+  display: flex; align-items: center; gap: 0;
+  margin: -8px 0 20px; padding: 0 8px;
+}
+.zid-spine-seg {
+  flex: 1; height: 3px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--green), var(--cyan));
+  opacity: 0.5; position: relative;
+}
+.zid-spine-seg + .zid-spine-seg { margin-left: 8px; }
+.zid-spine-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--green); border: 2px solid var(--bg);
+  box-shadow: 0 0 10px rgba(34,197,94,0.5);
+  position: absolute; top: -3.5px;
+}
+.zid-spine-dot.left  { left: -1px; }
+.zid-spine-dot.right { right: -1px; }
+.zid-spine-tag {
+  position: absolute; top: 10px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem; font-weight: 600; color: var(--green);
+  white-space: nowrap; opacity: 0.7;
+}
+
+/* Divider */
+.section-divider {
+  height: 1px; background: var(--border); margin: 40px 0 36px;
+}
+
+/* ---- Dependency timeline ---- */
+.dep-timeline {
+  position: relative; padding-left: 28px; margin-bottom: 8px;
+}
+.dep-timeline::before {
+  content: ''; position: absolute; left: 8px; top: 4px; bottom: 4px;
+  width: 2px; background: var(--border); border-radius: 2px;
+}
+.dep-item {
+  position: relative; padding: 10px 0 18px;
+}
+.dep-item::before {
+  content: ''; position: absolute; left: -24px; top: 14px;
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 2px solid var(--dim); background: var(--bg);
+}
+.dep-item.done::before { border-color: var(--green); background: var(--green); }
+.dep-item.active::before { border-color: var(--amber); background: var(--amber); }
+.dep-item.future::before { border-color: var(--dim); }
+
+.dep-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem; font-weight: 600; margin-bottom: 2px;
+}
+.dep-item.done .dep-date { color: var(--green); }
+.dep-item.active .dep-date { color: var(--amber); }
+.dep-item.future .dep-date { color: var(--dim); }
+
+.dep-title { font-size: 0.8rem; font-weight: 600; margin-bottom: 2px; }
+.dep-desc { font-size: 0.68rem; color: var(--muted); line-height: 1.55; }
+.dep-ticket {
+  display: inline-flex; padding: 2px 7px; border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 500;
+  background: var(--raised); border: 1px solid var(--border);
+  color: var(--muted); text-decoration: none; margin-top: 4px;
+}
+.dep-ticket:hover { border-color: var(--blue); color: var(--blue); }
+
+/* Key insight box */
+.insight-box {
+  padding: 20px 24px; border-radius: 14px; margin: 32px 0;
+  border: 1px solid var(--greenBorder); background: var(--greenBg);
+}
+.insight-box h3 {
+  font-size: 0.95rem; font-weight: 700; color: var(--green);
+  margin-bottom: 8px; letter-spacing: -0.01em;
+}
+.insight-box p {
+  font-size: 0.8rem; color: rgba(34,197,94,0.85); line-height: 1.65;
+}
+
+/* Inline Sankey */
+.sankey-wrap { margin: 0 0 12px; }
+.sankey-wrap canvas { display: block; width: 100%; }
+
+/* Phases */
+.phase-labels {
+  display: flex; gap: 0; margin-bottom: 6px;
+}
+.phase-label {
+  flex: 1; text-align: center;
+  font-size: 0.54rem; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--dim); padding: 4px 0;
+  border-top: 1px solid var(--border);
+}
+.phase-label + .phase-label { margin-left: 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="brand">
+  <svg viewBox="0 0 32 32" fill="none"><path d="M4 6h24L16 26 4 6z" fill="url(#zg)"/><defs><linearGradient id="zg" x1="4" y1="6" x2="28" y2="26"><stop stop-color="#22c55e"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs></svg>
+  <span>Zeta Global &middot; Product</span>
+</div>
+
+<h1>Customer Pulse: Why ZID Fixes It</h1>
+<p class="subtitle">Today's Customer Pulse reporting breaks because every step in the pipeline uses a different identifier. The fix is simple: use Zeta ID as the common spine from audience creation through reporting. No backwards translation. No fan-out. Same person, same demographics, same answer.</p>
+
+<!-- ============================================================ -->
+<!--  TODAY'S BROKEN PIPELINE                                      -->
+<!-- ============================================================ -->
+<div class="section-label broken"><div class="dot"></div>Today's Process</div>
+<div class="section-title">Five different ID types, one broken pipeline</div>
+<div class="section-desc">Each system uses a different identifier and a different data source for demographics. The round-trip from email to cookie and back is not bijective &mdash; it fans out at both ends.</div>
+
+<div class="phase-labels">
+  <div class="phase-label">Pre-Campaign</div>
+  <div class="phase-label">Export</div>
+  <div class="phase-label">In-Flight</div>
+  <div class="phase-label">Post-Campaign: Customer Pulse</div>
+  <div class="phase-label" style="flex:0.7">Result</div>
+</div>
+
+<div class="pipeline broken">
+  <div class="pipe-step">
+    <div class="pipe-num">1</div>
+    <div class="pipe-title">Audience Built in AE</div>
+    <div class="pipe-desc">Client emails, CRM, Data Cloud. Scaler estimates audience size.</div>
+    <div class="id-badge bad">email_md5</div>
+    <div class="pipe-arrow"><svg viewBox="0 0 20 20"><path d="M6 10h8M11 6l4 4-4 4" stroke="#ef4444" stroke-width="1.5" fill="none" stroke-opacity="0.4"/></svg></div>
+  </div>
+  <div class="pipe-step">
+    <div class="pipe-num">2</div>
+    <div class="pipe-title">ZIGS Export to DSP</div>
+    <div class="pipe-desc">Multi-hop graph traversal. 1 email &rarr; N cookies. Fan-out. Contradictory demographics.</div>
+    <div class="id-badge bad">email &rarr; cookies (1:N)</div>
+    <div class="pipe-arrow"><svg viewBox="0 0 20 20"><path d="M6 10h8M11 6l4 4-4 4" stroke="#ef4444" stroke-width="1.5" fill="none" stroke-opacity="0.4"/></svg></div>
+  </div>
+  <div class="pipe-step">
+    <div class="pipe-num">3</div>
+    <div class="pipe-title">DSP Impressions</div>
+    <div class="pipe-desc">Cookies served. Household, cross-device, pacing broaden delivery beyond target.</div>
+    <div class="id-badge warn">seismic cookie</div>
+    <div class="pipe-arrow"><svg viewBox="0 0 20 20"><path d="M6 10h8M11 6l4 4-4 4" stroke="#ef4444" stroke-width="1.5" fill="none" stroke-opacity="0.4"/></svg></div>
+  </div>
+  <div class="pipe-step">
+    <div class="pipe-num">4</div>
+    <div class="pipe-title">Reverse Resolution</div>
+    <div class="pipe-desc">Cookies &rarr; email_md5 via ZIGS. <strong>Not bijective.</strong> Different people come back. 2x+ fan-out.</div>
+    <div class="id-badge bad">cookies &rarr; emails (N:M)</div>
+    <div class="pipe-arrow"><svg viewBox="0 0 20 20"><path d="M6 10h8M11 6l4 4-4 4" stroke="#ef4444" stroke-width="1.5" fill="none" stroke-opacity="0.4"/></svg></div>
+  </div>
+  <div class="pipe-step" style="flex:0.7">
+    <div class="pipe-num">5</div>
+    <div class="pipe-title">Customer Pulse Report</div>
+    <div class="pipe-desc">Demographics from <code>demographics_raw_data_parquet</code>. Different table than targeting. Bell curve at 45&ndash;54.</div>
+    <div class="id-badge bad">wrong people + wrong demos</div>
+  </div>
+</div>
+
+<div class="problem-bar">
+  <div class="pb-label">Why this breaks</div>
+  <div class="pb-detail">The forward path (email &rarr; cookie) fans out 1:N. The reverse path (cookie &rarr; email) fans out N:M. The round-trip brings back people who were never targeted. Demographics come from a different table than the one used for targeting. Every campaign looks the same: bell curve peaking at 45&ndash;54, ~50/50 gender regardless of targeting.</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ============================================================ -->
+<!--  FIXED PIPELINE                                               -->
+<!-- ============================================================ -->
+<div class="section-label fixed"><div class="dot"></div>Fixed Process</div>
+<div class="section-title">ZID as the common spine &mdash; same person at every step</div>
+<div class="section-desc">Prospect audiences, demographics, audience export, impression logs, and Customer Pulse all key on the same Zeta ID. The backwards translation step is eliminated entirely.</div>
+
+<div class="phase-labels">
+  <div class="phase-label">Pre-Campaign</div>
+  <div class="phase-label">Export</div>
+  <div class="phase-label">In-Flight</div>
+  <div class="phase-label">Post-Campaign: Automated CP</div>
+  <div class="phase-label" style="flex:0.7">Result</div>
+</div>
+
+<div class="pipeline fixed">
+  <div class="pipe-step">
+    <div class="pipe-num">1</div>
+    <div class="pipe-title">Audience Built in AE</div>
+    <div class="pipe-desc">Audience Explorer creates audience using ZID-keyed prospect audiences. Multi-dimensional counts: people, households, devices.</div>
+    <div class="id-badge good">ZID (person)</div>
+    <div class="pipe-arrow"><svg viewBox="0 0 20 20"><path d="M6 10h8M11 6l4 4-4 4" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-opacity="0.5"/></svg></div>
+  </div>
+  <div class="pipe-step">
+    <div class="pipe-num">2</div>
+    <div class="pipe-title">ZID Cluster Export</div>
+    <div class="pipe-desc">Same ZIDs &rarr; pre-computed cookie clusters. No independent re-resolution. Export matches what AE showed.</div>
+    <div class="id-badge good">ZID &rarr; cookies (1:cluster)</div>
+    <div class="pipe-arrow"><svg viewBox="0 0 20 20"><path d="M6 10h8M11 6l4 4-4 4" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-opacity="0.5"/></svg></div>
+  </div>
+  <div class="pipe-step">
+    <div class="pipe-num">3</div>
+    <div class="pipe-title">DSP Impressions</div>
+    <div class="pipe-desc">Cookies served. Impression logs carry <strong>ZID + site_id</strong> via enterprise event log.</div>
+    <div class="id-badge good">cookie + ZID logged</div>
+    <div class="pipe-arrow"><svg viewBox="0 0 20 20"><path d="M6 10h8M11 6l4 4-4 4" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-opacity="0.5"/></svg></div>
+  </div>
+  <div class="pipe-step">
+    <div class="pipe-num">4</div>
+    <div class="pipe-title">Automated CP Generation</div>
+    <div class="pipe-desc">User says &ldquo;Create CP for campaign 123.&rdquo; Job pulls distinct ZIDs from enterprise event log. No reverse resolution needed.</div>
+    <div class="id-badge good">ZID (same person)</div>
+    <div class="pipe-arrow"><svg viewBox="0 0 20 20"><path d="M6 10h8M11 6l4 4-4 4" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-opacity="0.5"/></svg></div>
+  </div>
+  <div class="pipe-step" style="flex:0.7">
+    <div class="pipe-num">5</div>
+    <div class="pipe-title">Customer Pulse Report</div>
+    <div class="pipe-desc">Demographics from ZID-keyed tables. Same source as targeting. Demographics match.</div>
+    <div class="id-badge good">same people + same demos</div>
+  </div>
+</div>
+
+<!-- ZID spine visualization -->
+<div class="zid-spine">
+  <div class="zid-spine-seg"><div class="zid-spine-dot left"></div><div class="zid-spine-tag">ZID</div></div>
+  <div class="zid-spine-seg"><div class="zid-spine-tag">ZID</div></div>
+  <div class="zid-spine-seg"><div class="zid-spine-tag">ZID</div></div>
+  <div class="zid-spine-seg"><div class="zid-spine-tag">ZID</div></div>
+  <div class="zid-spine-seg"><div class="zid-spine-dot right"></div><div class="zid-spine-tag">ZID</div></div>
+</div>
+
+<div class="fix-bar">
+  <div class="fb-label">Why this works</div>
+  <div class="fb-detail">ZID is the common identifier at every step. The audience was built on ZIDs. The export grabbed cookies belonging to those ZIDs. The impression logs recorded which ZIDs were reached. Customer Pulse gets those same ZIDs. Demographics come from the same ZID-keyed table used during audience creation. No backwards translation. No fan-out. The person you targeted is the person you report on.</div>
+</div>
+
+<div class="insight-box">
+  <h3>What this eliminates</h3>
+  <p><strong>Manual impression pulls</strong> &mdash; no DSP analytics team member manually pulling cookies and loading them as a matched list.<br>
+  <strong>Reverse identity resolution</strong> &mdash; the cookie &rarr; email_md5 backwards translation that causes fan-out is gone entirely.<br>
+  <strong>Table mismatch</strong> &mdash; targeting and reporting both use ZID-keyed demographics from the same source.<br>
+  <strong>Phantom bell curves</strong> &mdash; demographics reflect the actual people who were targeted and reached.</p>
+</div>
+
+<!-- Inline Sankey comparison -->
+<div class="section-divider"></div>
+
+<div class="section-label broken"><div class="dot"></div>Identity Flow Comparison</div>
+<div class="section-title">Fan-out vs. bijectivity</div>
+<div class="section-desc">The Sankey diagrams below show how 3 people flow through each pipeline. Today: 3 people become 16 email_md5s after the round-trip. Fixed: 3 people stay 3 people.</div>
+
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+  <div>
+    <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--red);margin-bottom:8px;">Today: Fan-out round-trip</div>
+    <div class="sankey-wrap"><canvas id="sankey-broken" height="320"></canvas></div>
+  </div>
+  <div>
+    <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);margin-bottom:8px;">Fixed: ZID spine</div>
+    <div class="sankey-wrap"><canvas id="sankey-fixed" height="320"></canvas></div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ============================================================ -->
+<!--  DEPENDENCY TIMELINE                                          -->
+<!-- ============================================================ -->
+<div class="section-label timeline"><div class="dot"></div>Rollout Dependencies</div>
+<div class="section-title">Path to launch</div>
+<div class="section-desc">The solution rolls out incrementally. Once all dependencies are met, campaigns launched after the Audience Explorer ZID launch will have bijectivity natively built in.</div>
+
+<div class="dep-timeline">
+  <div class="dep-item active">
+    <div class="dep-date">Mid June 2026</div>
+    <div class="dep-title">DSP impressions in enterprise event logs with ZID + site_id</div>
+    <div class="dep-desc">Super Graph team pre-populates ZID on impression events. This enables the automated CP job to pull ZIDs directly.</div>
+    <a class="dep-ticket" href="https://zetaglobal.atlassian.net/browse/DATA-63449" target="_blank">DATA-63449</a>
+  </div>
+
+  <div class="dep-item active">
+    <div class="dep-date">June 30, 2026</div>
+    <div class="dep-title">Prospect audiences & demographics tables keyed on ZID</div>
+    <div class="dep-desc">Prospect Audiences team migrates tables so both audience creation and reporting read demographics from the same ZID-keyed source.</div>
+    <a class="dep-ticket" href="https://zetaglobal.atlassian.net/browse/EXP-69694" target="_blank">EXP-69694</a>
+  </div>
+
+  <div class="dep-item future">
+    <div class="dep-date">TBD</div>
+    <div class="dep-title">Customer Pulse migrated to ZID</div>
+    <div class="dep-desc">Customer Pulse ingests ZID-based audiences and uses ZID-keyed demographics for reporting. Eliminates the reverse resolution step.</div>
+  </div>
+
+  <div class="dep-item future">
+    <div class="dep-date">TBD</div>
+    <div class="dep-title">Automated CP generation interface</div>
+    <div class="dep-desc">User interface (location TBD) where a user says "Create Customer Pulse for campaign 123." Kicks off a job that selects distinct ZIDs from the enterprise event log and sends them to Customer Pulse as an audience. Architecture review with Manoj/Ananth needed.</div>
+  </div>
+
+  <div class="dep-item future">
+    <div class="dep-date">September 1, 2026</div>
+    <div class="dep-title">Audience Explorer using ZID to create audiences</div>
+    <div class="dep-desc">AE creates audiences on ZID-keyed prospect tables. Multi-dimensional counts: people (ZID), households, devices. This is when bijectivity becomes native for new campaigns.</div>
+    <a class="dep-ticket" href="https://zetaglobal.atlassian.net/browse/EXP-70754" target="_blank">EXP-70754</a>
+  </div>
+
+  <div class="dep-item future">
+    <div class="dep-date">Q3 2026</div>
+    <div class="dep-title">Audience exports using ZID to sync to DSP</div>
+    <div class="dep-desc">DConn team exports ZID clusters to DSP. Export matches what AE showed &mdash; no independent re-resolution.</div>
+    <a class="dep-ticket" href="https://zetaglobal.atlassian.net/browse/DATA-47087" target="_blank">DATA-47087</a>
+  </div>
+</div>
+
+<div class="insight-box" style="margin-top:32px; border-color: var(--blueBorder); background: var(--blueBg);">
+  <h3 style="color: var(--blue);">Implication</h3>
+  <p style="color: rgba(96,165,250,0.85);">Audiences created after the September 1 launch of Audience Explorer on ZID will have bijectivity natively built in. Customer Pulses created from campaigns launched after that date will have the fix fully applied &mdash; no manual suppression required.</p>
+</div>
+
+</div><!-- .page -->
+
+<script>
+const C = {
+  alice: '#a78bfa', bob: '#60a5fa', carol: '#22d3ee',
+  red: '#ef4444', green: '#22c55e', amber: '#f59e0b',
+  dim: '#4b5563', muted: '#9ca3af',
+};
+
+function setup(canvas, h) {
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.offsetWidth;
+  canvas.width = W * dpr; canvas.height = h * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, W, H: h };
+}
+
+function bez(ctx, x1, y1t, y1b, x2, y2t, y2b, col, a) {
+  const c1 = x1+(x2-x1)*0.42, c2 = x1+(x2-x1)*0.58;
+  ctx.fillStyle = col; ctx.globalAlpha = a;
+  ctx.beginPath(); ctx.moveTo(x1,y1t);
+  ctx.bezierCurveTo(c1,y1t,c2,y2t,x2,y2t);
+  ctx.lineTo(x2,y2b); ctx.bezierCurveTo(c2,y2b,c1,y1b,x1,y1b);
+  ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+}
+function bezL(ctx, x1, y1, x2, y2, col, a, lw) {
+  const c1 = x1+(x2-x1)*0.42, c2 = x1+(x2-x1)*0.58;
+  ctx.strokeStyle = col; ctx.globalAlpha = a; ctx.lineWidth = lw;
+  ctx.beginPath(); ctx.moveTo(x1,y1);
+  ctx.bezierCurveTo(c1,y1,c2,y2,x2,y2);
+  ctx.stroke(); ctx.globalAlpha=1;
+}
+function node(ctx, x, y, w, h, col, a) {
+  ctx.fillStyle = col; ctx.globalAlpha = a||0.85;
+  ctx.beginPath(); ctx.roundRect(x-w/2, y, w, h, 5); ctx.fill();
+  ctx.globalAlpha = 1;
+}
+function lbl(ctx, t, x, y, col, align, sz) {
+  ctx.font = `500 ${sz||10}px 'JetBrains Mono',monospace`;
+  ctx.fillStyle = col||C.muted; ctx.textAlign = align||'center';
+  ctx.fillText(t, x, y);
+}
+function tag(ctx, t, x, y, bg, fg, sz) {
+  ctx.font = `600 ${sz||9}px 'Inter',sans-serif`;
+  const m = ctx.measureText(t);
+  const tw = m.width+12, th = (sz||9)+8;
+  ctx.fillStyle = bg; ctx.globalAlpha = 0.9;
+  ctx.beginPath(); ctx.roundRect(x-tw/2, y-th/2, tw, th, 100);
+  ctx.fill(); ctx.globalAlpha=1;
+  ctx.fillStyle = fg; ctx.textAlign = 'center';
+  ctx.fillText(t, x, y+(sz?sz/3:3));
+}
+
+function drawBroken() {
+  const canvas = document.getElementById('sankey-broken');
+  const { ctx, W, H } = setup(canvas, 320);
+  const nw = 12;
+  const cols = [W*0.08, W*0.3, W*0.52, W*0.75, W*0.92];
+
+  lbl(ctx, '3 emails', cols[0], 14, C.dim, 'center', 9);
+  lbl(ctx, '8 cookies', cols[1], 14, C.red, 'center', 9);
+  lbl(ctx, 'impressions', cols[2], 14, C.dim, 'center', 9);
+  lbl(ctx, 'reverse \u2192', cols[3], 14, C.red, 'center', 9);
+  lbl(ctx, '16 emails', cols[4], 14, C.red, 'center', 9);
+
+  const srcH = 50, srcGap = 12;
+  const srcTop = 34;
+  const src = [
+    { y: srcTop, h: srcH, color: C.alice, label: 'alice@' },
+    { y: srcTop+srcH+srcGap, h: srcH, color: C.bob, label: 'bob@' },
+    { y: srcTop+2*(srcH+srcGap), h: srcH, color: C.carol, label: 'carol@' },
+  ];
+
+  const ckH = 18, ckGap = 4;
+  const cks = [
+    { color: C.alice, from: 0 },{ color: C.alice, from: 0 },
+    { color: C.red, from: [0,1], shared: true },
+    { color: C.bob, from: 1 },
+    { color: C.carol, from: 2 },{ color: C.carol, from: 2 },
+    { color: C.carol, from: 2 },{ color: C.amber, from: 1, stale: true },
+  ];
+  const ckTop = 34;
+  cks.forEach((c,i) => { c.y = ckTop+i*(ckH+ckGap); c.h = ckH; });
+
+  const revH = 12, revGap = 1;
+  const revs = [];
+  const origIdx = [0,4,8];
+  for (let i=0;i<16;i++) {
+    revs.push({ color: origIdx.includes(i) ? [C.alice,C.bob,C.carol][[0,4,8].indexOf(i)] : C.red, orig: origIdx.includes(i) });
+  }
+  const revTop = 30;
+  revs.forEach((r,i) => { r.y = revTop+i*(revH+revGap); r.h = revH; });
+
+  // Flows: src -> cookies (fan-out, red)
+  cks.forEach(ck => {
+    const froms = Array.isArray(ck.from)?ck.from:[ck.from];
+    froms.forEach(fi => {
+      const s = src[fi];
+      bez(ctx, cols[0]+nw/2,s.y,s.y+s.h, cols[1]-nw/2,ck.y,ck.y+ck.h, C.red, 0.22);
+      bezL(ctx, cols[0]+nw/2,s.y+s.h/2, cols[1]-nw/2,ck.y+ck.h/2, C.red, 0.5, 2);
+    });
+  });
+  // cookies -> impressions
+  cks.forEach(ck => {
+    bez(ctx, cols[1]+nw/2,ck.y,ck.y+ck.h, cols[2]-nw/2,ck.y,ck.y+ck.h, ck.color, 0.08);
+    bezL(ctx, cols[1]+nw/2,ck.y+ck.h/2, cols[2]-nw/2,ck.y+ck.h/2, ck.color, 0.2, 1);
+  });
+  // impressions -> reverse emails (fan-out, red)
+  const ckToRev = [[0,0],[0,1],[1,2],[1,3],[2,4],[2,5],[2,6],[3,7],[3,8],[4,9],[4,10],[5,11],[5,12],[6,13],[6,14],[6,15]];
+  ckToRev.forEach(([ci,ri]) => {
+    const ck = cks[ci], re = revs[ri];
+    bez(ctx, cols[2]+nw/2,ck.y,ck.y+ck.h, cols[3]-nw/2,re.y,re.y+re.h, C.red, 0.22);
+    bezL(ctx, cols[2]+nw/2,ck.y+ck.h/2, cols[3]-nw/2,re.y+re.h/2, C.red, 0.5, 1.5);
+  });
+  // reverse -> report
+  revs.forEach(re => {
+    bez(ctx, cols[3]+nw/2,re.y,re.y+re.h, cols[4]-nw/2,re.y,re.y+re.h, re.color, 0.08);
+    bezL(ctx, cols[3]+nw/2,re.y+re.h/2, cols[4]-nw/2,re.y+re.h/2, re.color, 0.2, 1);
+  });
+
+  // Nodes
+  src.forEach(s => { node(ctx, cols[0], s.y, nw, s.h, s.color, 0.85); lbl(ctx, s.label, cols[0]-nw/2-4, s.y+s.h/2+3, s.color, 'right', 9); });
+  [1,2].forEach(col => cks.forEach(ck => node(ctx, cols[col], ck.y, nw, ck.h, ck.color, col===2? 0.5 : 0.85)));
+  [3,4].forEach(col => revs.forEach(re => node(ctx, cols[col], re.y, nw, re.h, re.color, 0.85)));
+
+  // Glow
+  const g1 = ctx.createRadialGradient((cols[0]+cols[1])/2, H/2, 10, (cols[0]+cols[1])/2, H/2, (cols[1]-cols[0])*0.7);
+  g1.addColorStop(0,'rgba(239,68,68,0.08)'); g1.addColorStop(1,'rgba(239,68,68,0)');
+  ctx.fillStyle = g1; ctx.fillRect(cols[0]-20,20,cols[1]-cols[0]+40,H-40);
+  const g2 = ctx.createRadialGradient((cols[2]+cols[3])/2, H/2, 10, (cols[2]+cols[3])/2, H/2, (cols[3]-cols[2])*0.7);
+  g2.addColorStop(0,'rgba(239,68,68,0.08)'); g2.addColorStop(1,'rgba(239,68,68,0)');
+  ctx.fillStyle = g2; ctx.fillRect(cols[2]-20,20,cols[3]-cols[2]+40,H-40);
+
+  tag(ctx, '\u26A0 3\u21928 fan-out', (cols[0]+cols[1])/2, H-14, 'rgba(239,68,68,0.2)', C.red, 10);
+  tag(ctx, '\u26A0 8\u219216 fan-out', (cols[2]+cols[3])/2, H-14, 'rgba(239,68,68,0.2)', C.red, 10);
+}
+
+function drawFixed() {
+  const canvas = document.getElementById('sankey-fixed');
+  const { ctx, W, H } = setup(canvas, 320);
+  const nw = 12;
+  const cols = [W*0.08, W*0.28, W*0.5, W*0.72, W*0.92];
+
+  lbl(ctx, '3 ZIDs', cols[0], 14, C.green, 'center', 9);
+  lbl(ctx, 'cookies', cols[1], 14, C.dim, 'center', 9);
+  lbl(ctx, 'impressions', cols[2], 14, C.dim, 'center', 9);
+  lbl(ctx, 'ZID direct', cols[3], 14, C.green, 'center', 9);
+  lbl(ctx, '3 ZIDs \u2713', cols[4], 14, C.green, 'center', 9);
+
+  const people = [
+    { color: C.alice, label: 'ZID_1', cookies: 2 },
+    { color: C.bob,   label: 'ZID_2', cookies: 2 },
+    { color: C.carol, label: 'ZID_3', cookies: 3 },
+  ];
+  const bandH = 60, bandGap = 16;
+  const bandTop = 34;
+
+  people.forEach((p, pi) => {
+    const by = bandTop + pi*(bandH+bandGap);
+    const nc = p.cookies;
+    const ckH = Math.floor((bandH-(nc-1)*3)/nc);
+
+    // ZID node
+    node(ctx, cols[0], by, nw, bandH, p.color, 0.85);
+    lbl(ctx, p.label, cols[0]-nw/2-4, by+bandH/2+3, p.color, 'right', 9);
+
+    // ZID -> cookies
+    for (let ci=0;ci<nc;ci++) {
+      const cy = by+ci*(ckH+3);
+      bez(ctx, cols[0]+nw/2,by,by+bandH, cols[1]-nw/2,cy,cy+ckH, p.color, 0.12);
+      bezL(ctx, cols[0]+nw/2,by+bandH/2, cols[1]-nw/2,cy+ckH/2, p.color, 0.3, 1);
+      node(ctx, cols[1], cy, nw, ckH, p.color, 0.85);
+      // cookies -> impressions
+      bez(ctx, cols[1]+nw/2,cy,cy+ckH, cols[2]-nw/2,cy,cy+ckH, p.color, 0.08);
+      bezL(ctx, cols[1]+nw/2,cy+ckH/2, cols[2]-nw/2,cy+ckH/2, p.color, 0.2, 1);
+      node(ctx, cols[2], cy, nw, ckH, p.color, 0.5);
+      // impressions -> ZID (convergence, green)
+      bez(ctx, cols[2]+nw/2,cy,cy+ckH, cols[3]-nw/2,by,by+bandH, C.green, 0.15);
+      bezL(ctx, cols[2]+nw/2,cy+ckH/2, cols[3]-nw/2,by+bandH/2, C.green, 0.4, 2);
+    }
+
+    // ZID at col 3
+    node(ctx, cols[3], by, nw, bandH, p.color, 0.85);
+    lbl(ctx, p.label, cols[3]+nw/2+4, by+bandH/2+3, p.color, 'left', 8);
+    // ZID -> report
+    bez(ctx, cols[3]+nw/2,by,by+bandH, cols[4]-nw/2,by,by+bandH, C.green, 0.15);
+    bezL(ctx, cols[3]+nw/2,by+bandH/2, cols[4]-nw/2,by+bandH/2, C.green, 0.45, 2);
+    node(ctx, cols[4], by, nw, bandH, p.color, 0.85);
+
+    ctx.font = "600 10px 'Inter',sans-serif";
+    ctx.fillStyle = C.green; ctx.textAlign = 'left';
+    ctx.fillText('\u2713', cols[4]+nw/2+4, by+bandH/2+4);
+  });
+
+  // Green glow behind convergence
+  const g = ctx.createRadialGradient((cols[2]+cols[3])/2, H/2, 10, (cols[2]+cols[3])/2, H/2, (cols[3]-cols[2])*0.7);
+  g.addColorStop(0,'rgba(34,197,94,0.06)'); g.addColorStop(1,'rgba(34,197,94,0)');
+  ctx.fillStyle = g; ctx.fillRect(cols[2]-20,20,cols[3]-cols[2]+40,H-40);
+
+  tag(ctx, '\u2705 3\u21923\u21923 (same people)', (cols[0]+cols[4])/2, H-14, 'rgba(34,197,94,0.15)', C.green, 10);
+}
+
+function drawAll() { drawBroken(); drawFixed(); }
+window.addEventListener('load', drawAll);
+window.addEventListener('resize', drawAll);
+</script>
+</body>
+</html>
